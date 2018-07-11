@@ -25,7 +25,7 @@ end
 systemgeneration();
 %% FiM parameters
 Ksim=0.4e-3*ele;%[J], easy-axis anisotropy
-Jgdgd=1.26e-21;Jfefe=2.835e-21;Jfegd=-1.09e-21;%[J/link][1]
+Jgdgd=-1.26e-21;Jfefe=-2.835e-21;Jfegd=1.09e-21;%[J/link][1]
 gTM=2.2;gRE=2;%g-factor
 gamTM=gTM*mub/(hbar*ele);%1/(s.T)refer to "PRL 97, 217202 (2006), Jiang Xin"
 gamRE=gRE*mub/(hbar*ele);
