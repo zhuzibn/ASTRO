@@ -8,7 +8,7 @@ if bc%
         for cty=1:natomy
             for ctx=1:natomx
                 if cty<round(natomy/2)
-                    if atomtype_(ctx,cty)==1%RE
+                    if atomtype_(ctx,cty)==0%TM
                         thet_=5/180*pi;
                     else
                         thet_=(5+180)/180*pi;
@@ -17,7 +17,7 @@ if bc%
                     my_init(ctx,cty)=sin(thet_)*sin(phi_);
                     mz_init(ctx,cty)=cos(thet_);
                 else
-                    if atomtype_(ctx,cty)==1%RE
+                    if atomtype_(ctx,cty)==0%TM
                         thet_=(5+180)/180*pi;
                     else
                         thet_=5/180*pi;
@@ -32,7 +32,7 @@ if bc%
         phi_=0;
        for cty=1:natomy
            for ctx=1:natomx
-               if atomtype_(ctx,cty)==1%RE
+               if atomtype_(ctx,cty)==0%TM
                    thet_=5/180*pi;
                else
                    thet_=(5+180)/180*pi;
