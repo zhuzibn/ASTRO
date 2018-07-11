@@ -104,6 +104,7 @@ for cty=1:natomy
         end
     end
 end
+gamatom=scalgpu*(1+alp^2);
 clear ctx cty
 BF=chi*BD;
 ct3run=round((runtime)/gpusave);
@@ -166,7 +167,18 @@ while ~(ct3>ct3run)
         hdmi_x=Dsim./muigpu.*(-mmznextW+mmzpreviousW);%[T]
         hdmi_y=Dsim./muigpu.*(-mmznextL+mmzpreviousL);
         hdmi_z=Dsim./muigpu.*(mmxnextW-mmxpreviousW+mmynextL-mmypreviousL);
-        
+        if thermalenable
+           %equation (15) in Atomistic spin model simulations of magnetic nanomaterials
+    %calculate once for one time step
+    Hthermal1=sqrt(2*kb*T*alp./(muigpu.*gamatom.*tstep));%[T]
+    Hthermalx=normrnd(0,Hthermal1);
+    Hthermaly=normrnd(0,Hthermal1);
+    Hthermalz=normrnd(0,Hthermal1);
+        else
+            Hthermalx=zeros(natomx,natomy,'gpuArray');
+            Hthermaly=zeros(natomx,natomy,'gpuArray');
+            Hthermalz=zeros(natomx,natomy,'gpuArray');
+        end
         if (0)%cpu calculation of dipole field, used for benchmaking
             cpuhdipolex=zeros(natomx,natomy);
             cpuhdipoley=zeros(natomx,natomy);
@@ -221,9 +233,9 @@ while ~(ct3>ct3run)
             end
         end
         clear ctx cty ctx2 cty2
-        hhx=hex_x+hani_x+hdmi_x+hdipolex_+Hext(1);
-        hhy=hex_y+hani_y+hdmi_y+hdipoley_+Hext(2);
-        hhz=hex_z+hani_z+hdmi_z+hdipolez_+Hext(3);
+        hhx=hex_x+hani_x+hdmi_x+hdipolex_+Hext(1)+Hthermalx;
+        hhy=hex_y+hani_y+hdmi_y+hdipoley_+Hext(2)+Hthermaly;
+        hhz=hex_z+hani_z+hdmi_z+hdipolez_+Hext(3)+Hthermalz;
         if rk4==2%4th predictor-corrector
             if ct3==1 && ~(ct1>3)
                 [sxx,syy,szz]=arrayfun(@atomgpurk4,mmxtmp,mmytmp,mmztmp,scalgpu,alp,...

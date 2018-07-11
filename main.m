@@ -4,7 +4,6 @@ clear all;clc;close all;tic
 %% control parameter
 ddebug=0;
 loadstartm=0;%1:load mat file; 0:direct calculate
-dwcalc=0;%1:simulate dw motion 0: no domain wall
 %gpuDevice(1)%select GPU device
 constantfile;
 clear gam
@@ -13,6 +12,8 @@ rk4=1;%1:rk4,0:heun Method,2:4th predictor-corrector
 bc=1;%0.periodic condition;1,not periodic
 dipolee=0;%enable dipole?
 DMIenable=0;
+dwcalc=0;%1:simulate dw motion 0: no domain wall
+thermalenable=1;%enable thermal field?
 %% system generation
 natomx=20;natomy=50;%no. of cells along x,y direction
 compositionn=0.3;%composition percentage (X) of RE element, e.g. GdX(FeCo)1-X
@@ -57,10 +58,10 @@ end
 BDRE=hbar/2*thetaSH*jc/(msRE*tz);%[T]
 BDTM=hbar/2*thetaSH*jc/(msTM*tz);
 %% other parameters
-
+T=100;%[K]
 %% time control
 gpusave=2e-12;%how often saving gpu data
-tstep=40e-15;
+tstep=2e-15;
 gpusteps=round(gpusave/tstep);
 runtime=3*gpusave;%second run for dw motion
 savetstep=100;%to reduce data size
