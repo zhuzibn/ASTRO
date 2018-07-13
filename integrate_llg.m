@@ -22,7 +22,12 @@ for cty=1:natomy
         end
         if atomtype_(ctx,cty)==1%local atom is RE
             if cty==natomy
+                if bc
                 AsimnextL(ctx,cty)=0;
+                else
+                AsimnextL(ctx,cty)=Jgdgd*(atomtype_(ctx,cty)==atomtype_(ctx,1))+...
+                    Jfegd*(~atomtype_(ctx,cty)==atomtype_(ctx,1));  
+                end
             else
                 if atomtype_(ctx,cty+1)==1%the other atom is RE
                     AsimnextL(ctx,cty)=Jgdgd;
@@ -32,7 +37,12 @@ for cty=1:natomy
             end
             
             if cty==1
-                AsimpreviousL(ctx,cty)=0;
+                if bc
+                    AsimpreviousL(ctx,cty)=0;
+                else
+                    AsimpreviousL(ctx,cty)=Jgdgd*(atomtype_(ctx,cty)==atomtype_(ctx,natomy))+...
+                        Jfegd*(~atomtype_(ctx,cty)==atomtype_(ctx,natomy));
+                end
             else
                 if atomtype_(ctx,cty-1)==1%the other atom is RE
                     AsimpreviousL(ctx,cty)=Jgdgd;
@@ -42,7 +52,12 @@ for cty=1:natomy
             end
             
             if ctx==natomx
-                AsimnextW(ctx,cty)=0;
+                if bc
+                    AsimnextW(ctx,cty)=0;
+                else
+                    AsimnextW(ctx,cty)=Jgdgd*(atomtype_(ctx,cty)==atomtype_(1,cty))+...
+                        Jfegd*(~atomtype_(ctx,cty)==atomtype_(1,cty));
+                end
             else
                 if atomtype_(ctx+1,cty)==1%the other atom is RE
                     AsimnextW(ctx,cty)=Jgdgd;
@@ -52,7 +67,12 @@ for cty=1:natomy
             end
             
             if ctx==1
-                AsimpreviousW(ctx,cty)=0;
+                if bc
+                    AsimpreviousW(ctx,cty)=0;
+                else
+                    AsimpreviousW(ctx,cty)=Jgdgd*(atomtype_(ctx,cty)==atomtype_(natomx,cty))+...
+                        Jfegd*(~atomtype_(ctx,cty)==atomtype_(natomx,cty));
+                end
             else
                 if atomtype_(ctx-1,cty)==1%the other atom is RE
                     AsimpreviousW(ctx,cty)=Jgdgd;
@@ -63,7 +83,12 @@ for cty=1:natomy
             
         else%local atom is TM
             if cty==natomy
-                AsimnextL(ctx,cty)=0;
+                if bc
+                    AsimnextL(ctx,cty)=0;
+                else
+                    AsimnextL(ctx,cty)=Jfefe*(atomtype_(ctx,cty)==atomtype_(ctx,1))+...
+                        Jfegd*(~atomtype_(ctx,cty)==atomtype_(ctx,1));
+                end
             else
                 if atomtype_(ctx,cty+1)==1%the other atom is RE
                     AsimnextL(ctx,cty)=Jfegd;
@@ -73,7 +98,12 @@ for cty=1:natomy
             end
             
             if cty==1
-                AsimpreviousL(ctx,cty)=0;
+                if bc
+                    AsimpreviousL(ctx,cty)=0;
+                else
+                    AsimpreviousL(ctx,cty)=Jfefe*(atomtype_(ctx,cty)==atomtype_(ctx,natomy))+...
+                        Jfegd*(~atomtype_(ctx,cty)==atomtype_(ctx,natomy));
+                end
             else
                 if atomtype_(ctx,cty-1)==1%the other atom is RE
                     AsimpreviousL(ctx,cty)=Jfegd;
@@ -83,7 +113,12 @@ for cty=1:natomy
             end
             
             if ctx==natomx
-                AsimnextW(ctx,cty)=0;
+                if bc
+                    AsimnextW(ctx,cty)=0;
+                else
+                    AsimnextW(ctx,cty)=Jfefe*(atomtype_(ctx,cty)==atomtype_(1,cty))+...
+                        Jfegd*(~atomtype_(ctx,cty)==atomtype_(1,cty));
+                end
             else
                 if atomtype_(ctx+1,cty)==1%the other atom is RE
                     AsimnextW(ctx,cty)=Jfegd;
@@ -93,7 +128,12 @@ for cty=1:natomy
             end
             
             if ctx==1
-                AsimpreviousW(ctx,cty)=0;
+                if bc
+                    AsimpreviousW(ctx,cty)=0;
+                else
+                    AsimpreviousW(ctx,cty)=Jfefe*(atomtype_(ctx,cty)==atomtype_(natomx,cty))+...
+                        Jfegd*(~atomtype_(ctx,cty)==atomtype_(natomx,cty));
+                end
             else
                 if atomtype_(ctx-1,cty)==1%the other atom is RE
                     AsimpreviousW(ctx,cty)=Jfegd;
@@ -126,31 +166,27 @@ while ~(ct3>ct3run)
         mmxtmp=mmx(:,:,ct1);
         mmytmp=mmy(:,:,ct1);
         mmztmp=mmz(:,:,ct1);
+        
+        mmxnextL=circshift(mmxtmp,[0,-1]);%length direction
+        mmynextL=circshift(mmytmp,[0,-1]);
+        mmznextL=circshift(mmztmp,[0,-1]);
+        mmxpreviousL=circshift(mmxtmp,[0,1]);
+        mmypreviousL=circshift(mmytmp,[0,1]);
+        mmzpreviousL=circshift(mmztmp,[0,1]);
+        
+        mmxnextW=circshift(mmxtmp,[-1,0]);%width direction
+        mmynextW=circshift(mmytmp,[-1,0]);
+        mmznextW=circshift(mmztmp,[-1,0]);
+        mmxpreviousW=circshift(mmxtmp,[1,0]);
+        mmypreviousW=circshift(mmytmp,[1,0]);
+        mmzpreviousW=circshift(mmztmp,[1,0]);
         if bc%not periodic condition
-            mmxnextL=circshift(mmxtmp,[0,-1]);%length direction
-            mmynextL=circshift(mmytmp,[0,-1]);
-            mmznextL=circshift(mmztmp,[0,-1]);
-            mmxpreviousL=circshift(mmxtmp,[0,1]);
-            mmypreviousL=circshift(mmytmp,[0,1]);
-            mmzpreviousL=circshift(mmztmp,[0,1]);
             mmxnextL(:,end)=0;mmynextL(:,end)=0;mmznextL(:,end)=0;
             mmxpreviousL(:,1)=0;mmypreviousL(:,1)=0;mmzpreviousL(:,1)=0;
-            
-            mmxnextW=circshift(mmxtmp,[-1,0]);%width direction
-            mmynextW=circshift(mmytmp,[-1,0]);
-            mmznextW=circshift(mmztmp,[-1,0]);
-            mmxpreviousW=circshift(mmxtmp,[1,0]);
-            mmypreviousW=circshift(mmytmp,[1,0]);
-            mmzpreviousW=circshift(mmztmp,[1,0]);
             mmxnextW(end,:)=0;mmynextW(end,:)=0;mmznextW(end,:)=0;
             mmxpreviousW(1,:)=0;mmypreviousW(1,:)=0;mmzpreviousW(1,:)=0;
         else%periodic condition
-            mmxnextL=circshift(mmxtmp,[0,-1]);
-            mmynextL=circshift(mmytmp,[0,-1]);
-            mmznextL=circshift(mmztmp,[0,-1]);
-            mmxpreviousL=circshift(mmxtmp,[0,1]);
-            mmypreviousL=circshift(mmytmp,[0,1]);
-            mmzpreviousL=circshift(mmztmp,[0,1]);
+            %do nothing
         end
         
         hex_x=-(AsimnextL.*mmxnextL+AsimpreviousL.*mmxpreviousL+...

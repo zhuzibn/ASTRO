@@ -9,13 +9,13 @@ constantfile;
 clear gam
 
 rk4=1;%1:rk4,0:heun Method,2:4th predictor-corrector
-bc=1;%0.periodic condition;1,not periodic
+bc=0;%0.periodic condition;1,not periodic
 dipolee=0;%enable dipole?
 DMIenable=0;
 dwcalc=0;%1:simulate dw motion 0: no domain wall
 thermalenable=1;%enable thermal field?
 %% system generation
-natomx=20;natomy=50;%no. of cells along x,y direction
+natomx=3;natomy=3;%no. of cells along x,y direction
 compositionn=0.3;%composition percentage (X) of RE element, e.g. GdX(FeCo)1-X
 d=0.4e-9;%[m],lattice constant
 natom=natomx*natomy;
