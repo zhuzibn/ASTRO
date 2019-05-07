@@ -3,7 +3,7 @@
 clear all;clc;close all;tic
 %% control parameter
 ddebug=0;
-loadstartm=1;%1:load mat file; 0:direct calculate
+loadstartm=0;%1:load mat file; 0:direct calculate
 %gpuDevice(1)%select GPU device
 constantfile;
 clear gam
@@ -39,7 +39,8 @@ else
 end
 alp=0.02;%Gilbert damping
 %% electrical parameters
-jc=0e1;%[A/m2]
+jcSOT=1e9;%[A/m2]
+jcSTT=1.5e9;%[A/m2]
 Hext=[0,0,0e-3];% corresponding to runtime2
 %% SOT parameters
 SOT_DLT=1;%1(0),enable(disable) SOT damping torque
@@ -54,8 +55,23 @@ if SOT_FLT
 else
     chi=0;
 end
-BDRE=hbar/2*thetaSH*jc/(msRE*tz);%[T]
-BDTM=hbar/2*thetaSH*jc/(msTM*tz);
+BDSOTRE=hbar/2*thetaSH*jcSOT/(msRE*tz);%[T]
+BDSOTTM=hbar/2*thetaSH*jcSOT/(msTM*tz);
+%% STT parameters
+STT_DLT=1;%1(0),enable(disable) SOT damping torque
+STT_FLT=0;%1(0),enable(disable) SOT field-like torque
+psjSTT=[0,0,1];%spin flux polarization
+psjSTTx=psjSTT(1);
+psjSTTy=psjSTT(2);
+psjSTTz=psjSTT(3);
+etaSTT=0.8;%spin hall angle
+if STT_FLT
+    chiSTT=0;%ratio of FLT/DLT
+else
+    chiSTT=0;
+end
+BDSTTRE=hbar/2*etaSTT*jcSTT/(msRE*tz);%[T]
+BDSTTTM=hbar/2*etaSTT*jcSTT/(msTM*tz);
 %% other parameters
 T=100;%[K]
 %% time control

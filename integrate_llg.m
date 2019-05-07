@@ -2,7 +2,8 @@ mmx_=zeros(natomx,natomy,totstep);
 mmy_=zeros(natomx,natomy,totstep);
 mmz_=zeros(natomx,natomy,totstep);
 
-BD=zeros(natomx,natomy,'gpuArray');
+BDSOT=zeros(natomx,natomy,'gpuArray');
+BDSTT=zeros(natomx,natomy,'gpuArray');
 muigpu=zeros(natomx,natomy,'gpuArray');
 scalgpu=zeros(natomx,natomy,'gpuArray');
 AsimnextL=zeros(natomx,natomy,'gpuArray');
@@ -14,11 +15,13 @@ for cty=1:natomy
         if atomtype_(ctx,cty)==1%RE
             muigpu(ctx,cty)=musRE;
             scalgpu(ctx,cty)=gamRE/(1+alp^2);%scale parameter
-            BD(ctx,cty)=BDRE;
+            BDSOT(ctx,cty)=BDSOTRE;
+            BDSTT(ctx,cty)=BDSTTRE;
         else
             muigpu(ctx,cty)=musTM;
             scalgpu(ctx,cty)=gamTM/(1+alp^2);%scale parameter
-            BD(ctx,cty)=BDTM;
+            BDSOT(ctx,cty)=BDSOTTM;
+            BDSTT(ctx,cty)=BDSTTTM;
         end
         if atomtype_(ctx,cty)==1%local atom is RE
             if cty==natomy
@@ -146,7 +149,8 @@ for cty=1:natomy
 end
 gamatom=scalgpu*(1+alp^2);
 clear ctx cty
-BF=chi*BD;
+BFSOT=chi*BDSOT;
+BFSTT=chi*BDSTT;
 ct3run=round((runtime)/gpusave);
 ct3=1;
 while ~(ct3>ct3run)
@@ -282,8 +286,9 @@ while ~(ct3>ct3run)
                     scalgpu,alp,tstep,hhx,hhy,hhz);
             end
         elseif rk4==1 %rk4
-            [sxx,syy,szz]=arrayfun(@atomgpurk4,mmxtmp,mmytmp,mmztmp,psjSHEx,psjSHEy,psjSHEz,scalgpu,alp,...
-                tstep,hhx,hhy,hhz,BD,BF);
+            [sxx,syy,szz]=arrayfun(@atomgpurk4,mmxtmp,mmytmp,mmztmp,psjSHEx,...
+                psjSHEy,psjSHEz,psjSTTx,psjSTTy,psjSTTz,scalgpu,alp,...
+                tstep,hhx,hhy,hhz,BDSOT,BFSOT,BDSTT,BFSTT);
         else%heun
             [sxx,syy,szz]=arrayfun(@atomgpu,mmxtmp,mmytmp,mmztmp,scalgpu,alp,...
                 tstep,hhx,hhy,hhz);%
