@@ -8,7 +8,7 @@ loadstartm=0;%1:load mat file; 0:direct calculate
 constantfile;
 clear gam
 rk4=1;%1:rk4,0:heun Method,2:4th predictor-corrector
-bc=0;%0.periodic condition;1,not periodic
+bc=1;%0.periodic condition;1,not periodic
 dipolee=0;%enable dipole?
 DMIenable=0;
 dwcalc=0;%1:simulate dw motion 0: no domain wall
