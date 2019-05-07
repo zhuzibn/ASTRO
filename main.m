@@ -2,8 +2,8 @@
 % require nvidia GPU
 clear all;clc;close all;tic
 %% control parameter
-ddebug=1;
-loadstartm=0;%1:load mat file; 0:direct calculate
+ddebug=0;
+loadstartm=1;%1:load mat file; 0:direct calculate
 %gpuDevice(1)%select GPU device
 constantfile;
 clear gam
@@ -12,34 +12,16 @@ bc=0;%0.periodic condition;1,not periodic
 dipolee=0;%enable dipole?
 DMIenable=0;
 dwcalc=0;%1:simulate dw motion 0: no domain wall
-thermalenable=1;%enable thermal field?
+thermalenable=0;%enable thermal field?
 %% system generation
-natomx=3;natomy=3;%no. of cells along x,y direction
-compositionn=0.3;%composition percentage (X) of RE element, e.g. GdX(FeCo)1-X
+natomx=10;natomy=10;%no. of cells along x,y direction
+compositionn=0.1;%composition percentage (X) of RE element, e.g. GdX(FeCo)1-X
 d=0.4e-9;%[m],lattice constant
 natom=natomx*natomy;
 if ddebug
     load('ddebug.mat');
 end
 systemgeneration();
-if(1)%view initial state
-    gridx = 1:natomx;
-    gridy = 1:natomy;
-    [gridplotx,gridploty] = meshgrid(gridx,gridy);
-    gridz=zeros(natomx,natomy);
-    figure;hold on%initial magnetization
-    for cty=1:natomy
-        for ctx=1:natomx
-            if atomtype_(ctx,cty)==0%TM
-                quiver3(gridplotx(natomx-ctx+1,cty),gridploty(natomx-ctx+1,cty),gridz(ctx,cty),...
-                    mx_init(ctx,cty),my_init(ctx,cty),mz_init(ctx,cty),'r');
-            else
-                quiver3(gridplotx(natomx-ctx+1,cty),gridploty(natomx-ctx+1,cty),gridz(ctx,cty),...
-                    mx_init(ctx,cty),my_init(ctx,cty),mz_init(ctx,cty),'b');
-            end
-        end
-    end
-end
 %% FiM parameters
 Ksim=0.4e-3*ele;%[J], easy-axis anisotropy
 Jgdgd=-1.26e-21;Jfefe=-2.835e-21;Jfegd=1.09e-21;%[J/link][1]
@@ -90,9 +72,33 @@ if (SOT_DLT || SOT_FLT) && ~(rk4==1)
 end
 
 if loadstartm
-    clear m_
-    load('startm_natom1000.mat')
-    m_=[mmxstart;mmystart;mmzstart];
+    clear mx_init my_init mz_init atomtype_
+    load('startm_x0.1_10x10.mat')
+    if natomx~=natomxcheck || natomx~=natomxcheck || compositionn~=compositionncheck
+       error('system not consistent') 
+    end
+    clear natomxcheck natomycheck compositionncheck
+    mx_init=mmxstart;
+    my_init=mmystart;
+    mz_init=mmzstart;
+end
+if(0)%view initial state
+    gridx = 1:natomx;
+    gridy = 1:natomy;
+    [gridplotx,gridploty] = meshgrid(gridx,gridy);
+    gridz=zeros(natomx,natomy);
+    figure;hold on%initial magnetization
+    for cty=1:natomy
+        for ctx=1:natomx
+            if atomtype_(ctx,cty)==0%TM
+                quiver3(gridplotx(natomx-ctx+1,cty),gridploty(natomx-ctx+1,cty),gridz(ctx,cty),...
+                    mx_init(ctx,cty),my_init(ctx,cty),mz_init(ctx,cty),'r');
+            else
+                quiver3(gridplotx(natomx-ctx+1,cty),gridploty(natomx-ctx+1,cty),gridz(ctx,cty),...
+                    mx_init(ctx,cty),my_init(ctx,cty),mz_init(ctx,cty),'b');
+            end
+        end
+    end
 end
 %% dynamic calc
 integrate_llg(); toc
