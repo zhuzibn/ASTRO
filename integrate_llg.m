@@ -203,10 +203,11 @@ while ~(ct3>ct3run)
         hani_x=zeros(size(hex_x,1),size(hex_x,2),'gpuArray');%anisotropy
         hani_y=zeros(size(hex_x,1),size(hex_x,2),'gpuArray');
         hani_z=2*Ksim./muigpu.*mmztmp;%[T]
-        
-        hdmi_x=Dsim./muigpu.*(-mmznextW+mmzpreviousW);%[T]
-        hdmi_y=Dsim./muigpu.*(-mmznextL+mmzpreviousL);
-        hdmi_z=Dsim./muigpu.*(mmxnextW-mmxpreviousW+mmynextL-mmypreviousL);
+        % Renjie pointed out the error in calculating hdmi in the previous
+        % version of code, which has been corrected below.
+        hdmi_x=Dsim./muigpu.*(-mmznextL+mmzpreviousL);%[T]
+        hdmi_y=Dsim./muigpu.*(-mmznextW+mmzpreviousW);
+        hdmi_z=Dsim./muigpu.*(mmxnextL-mmxpreviousL+mmynextW-mmypreviousW);
         if thermalenable
            %equation (15) in Atomistic spin model simulations of magnetic nanomaterials
     %calculate once for one time step
