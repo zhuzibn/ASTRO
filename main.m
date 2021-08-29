@@ -2,9 +2,7 @@
 % require nvidia GPU
 clear all;clc;close all;tic
 %% control parameter
-ddebug=0;
 loadstartm=0;%1:load mat file; 0:direct calculate
-%gpuDevice(1)%select GPU device
 constantfile;
 clear gam
 rk4=1;%1:rk4,0:heun Method,2:4th predictor-corrector
@@ -13,14 +11,21 @@ dipolee=0;%enable dipole?
 DMIenable=0;
 dwcalc=0;%1:simulate dw motion 0: no domain wall
 thermalenable=0;%enable thermal field?
+%% use fixed atom distribution
+load_fixed_atom_distrib=1;%load fixed atom distribution
+save_fixed_atom_distrib=0;%save fixed atom distribution
+ddebugfilename='distrib.mat';
+if save_fixed_atom_distrib && load_fixed_atom_distrib
+   error('only one of load_fixed_atom_distrib or save_fixed_atom_distrib can be enabled'); 
+end
+%% optional control
+%gpuDevice(1)%select GPU device
 %% system generation
-natomx=10;natomy=10;%no. of cells along x,y direction
+natomx=3;natomy=5;%no. of cells along vertical and horizontal direction, 
+%note this is different to the x,y,z in h_ex or hdmi etc
 compositionn=0.1;%composition percentage (X) of RE element, e.g. GdX(FeCo)1-X
 d=0.4e-9;%[m],lattice constant
 natom=natomx*natomy;
-if ddebug
-    load('ddebug.mat');
-end
 systemgeneration();
 %% FiM parameters
 Ksim=0.4e-3*ele;%[J], easy-axis anisotropy
@@ -86,7 +91,12 @@ t=linspace(tstep,runtime,totstep);
 if (SOT_DLT || SOT_FLT) && ~(rk4==1)
     error('only rk4 is implemented for spin torque driven')
 end
-
+if load_fixed_atom_distrib
+    load(ddebugfilename);
+elseif save_fixed_atom_distrib%save debug data
+    save('distrib.mat');   
+    error('distribution mat file has been saved, run the program again by setting load_fixed_atom_distrib=1')
+end
 if loadstartm
     clear mx_init my_init mz_init atomtype_
     load('startm_x0.1_10x10.mat')
