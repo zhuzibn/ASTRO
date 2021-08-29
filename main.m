@@ -12,11 +12,19 @@ DMIenable=0;
 dwcalc=0;%1:simulate dw motion 0: no domain wall
 thermalenable=0;%enable thermal field?
 %% use fixed atom distribution
-load_fixed_atom_distrib=1;%load fixed atom distribution
+load_fixed_atom_distrib=0;%load fixed atom distribution
 save_fixed_atom_distrib=0;%save fixed atom distribution
 ddebugfilename='distrib.mat';
 if save_fixed_atom_distrib && load_fixed_atom_distrib
    error('only one of load_fixed_atom_distrib or save_fixed_atom_distrib can be enabled'); 
+end
+if load_fixed_atom_distrib
+    display('use fixed atom distribution')
+elseif save_fixed_atom_distrib
+    display('save fixed atom distribution')
+else
+   display('use random atom distribution')
+   rng('shuffle');
 end
 %% optional control
 %gpuDevice(1)%select GPU device
