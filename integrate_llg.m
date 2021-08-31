@@ -1,163 +1,163 @@
-mmx_=zeros(natomx,natomy,totstep);
-mmy_=zeros(natomx,natomy,totstep);
-mmz_=zeros(natomx,natomy,totstep);
+mmx_=zeros(natomW,natomL,totstep);
+mmy_=zeros(natomW,natomL,totstep);
+mmz_=zeros(natomW,natomL,totstep);
 
-BDSOT=zeros(natomx,natomy,'gpuArray');
-BDSTT=zeros(natomx,natomy,'gpuArray');
-muigpu=zeros(natomx,natomy,'gpuArray');
-scalgpu=zeros(natomx,natomy,'gpuArray');
-AsimnextL=zeros(natomx,natomy,'gpuArray');
-AsimnextW=zeros(natomx,natomy,'gpuArray');
-AsimpreviousL=zeros(natomx,natomy,'gpuArray');
-AsimpreviousW=zeros(natomx,natomy,'gpuArray');
-for cty=1:natomy
-    for ctx=1:natomx
-        if atomtype_(ctx,cty)==1%RE
-            muigpu(ctx,cty)=musRE;
-            scalgpu(ctx,cty)=gamRE/(1+alp^2);%scale parameter
-            BDSOT(ctx,cty)=BDSOTRE;
-            BDSTT(ctx,cty)=BDSTTRE;
+BDSOT=zeros(natomW,natomL,'gpuArray');
+BDSTT=zeros(natomW,natomL,'gpuArray');
+muigpu=zeros(natomW,natomL,'gpuArray');
+scalgpu=zeros(natomW,natomL,'gpuArray');
+AsimnextL=zeros(natomW,natomL,'gpuArray');
+AsimnextW=zeros(natomW,natomL,'gpuArray');
+AsimpreviousL=zeros(natomW,natomL,'gpuArray');
+AsimpreviousW=zeros(natomW,natomL,'gpuArray');
+for ctL=1:natomL
+    for ctW=1:natomW
+        if atomtype_(ctW,ctL)==1%RE
+            muigpu(ctW,ctL)=musRE;
+            scalgpu(ctW,ctL)=gamRE/(1+alp^2);%scale parameter
+            BDSOT(ctW,ctL)=BDSOTRE;
+            BDSTT(ctW,ctL)=BDSTTRE;
         else
-            muigpu(ctx,cty)=musTM;
-            scalgpu(ctx,cty)=gamTM/(1+alp^2);%scale parameter
-            BDSOT(ctx,cty)=BDSOTTM;
-            BDSTT(ctx,cty)=BDSTTTM;
+            muigpu(ctW,ctL)=musTM;
+            scalgpu(ctW,ctL)=gamTM/(1+alp^2);%scale parameter
+            BDSOT(ctW,ctL)=BDSOTTM;
+            BDSTT(ctW,ctL)=BDSTTTM;
         end
-        if atomtype_(ctx,cty)==1%local atom is RE
-            if cty==natomy
+        if atomtype_(ctW,ctL)==1%local atom is RE
+            if ctL==natomL
                 if bc
-                AsimnextL(ctx,cty)=0;
+                AsimnextL(ctW,ctL)=0;
                 else
-                AsimnextL(ctx,cty)=Jgdgd*(atomtype_(ctx,cty)==atomtype_(ctx,1))+...
-                    Jfegd*(~atomtype_(ctx,cty)==atomtype_(ctx,1));  
+                AsimnextL(ctW,ctL)=Jgdgd*(atomtype_(ctW,ctL)==atomtype_(ctW,1))+...
+                    Jfegd*(~atomtype_(ctW,ctL)==atomtype_(ctW,1));  
                 end
             else
-                if atomtype_(ctx,cty+1)==1%the other atom is RE
-                    AsimnextL(ctx,cty)=Jgdgd;
+                if atomtype_(ctW,ctL+1)==1%the other atom is RE
+                    AsimnextL(ctW,ctL)=Jgdgd;
                 else%the other atom is TM
-                    AsimnextL(ctx,cty)=Jfegd;
+                    AsimnextL(ctW,ctL)=Jfegd;
                 end
             end
             
-            if cty==1
+            if ctL==1
                 if bc
-                    AsimpreviousL(ctx,cty)=0;
+                    AsimpreviousL(ctW,ctL)=0;
                 else
-                    AsimpreviousL(ctx,cty)=Jgdgd*(atomtype_(ctx,cty)==atomtype_(ctx,natomy))+...
-                        Jfegd*(~atomtype_(ctx,cty)==atomtype_(ctx,natomy));
+                    AsimpreviousL(ctW,ctL)=Jgdgd*(atomtype_(ctW,ctL)==atomtype_(ctW,natomL))+...
+                        Jfegd*(~atomtype_(ctW,ctL)==atomtype_(ctW,natomL));
                 end
             else
-                if atomtype_(ctx,cty-1)==1%the other atom is RE
-                    AsimpreviousL(ctx,cty)=Jgdgd;
+                if atomtype_(ctW,ctL-1)==1%the other atom is RE
+                    AsimpreviousL(ctW,ctL)=Jgdgd;
                 else%the other atom is TM
-                    AsimpreviousL(ctx,cty)=Jfegd;
+                    AsimpreviousL(ctW,ctL)=Jfegd;
                 end
             end
             
-            if ctx==natomx
+            if ctW==natomW
                 if bc
-                    AsimnextW(ctx,cty)=0;
+                    AsimnextW(ctW,ctL)=0;
                 else
-                    AsimnextW(ctx,cty)=Jgdgd*(atomtype_(ctx,cty)==atomtype_(1,cty))+...
-                        Jfegd*(~atomtype_(ctx,cty)==atomtype_(1,cty));
+                    AsimnextW(ctW,ctL)=Jgdgd*(atomtype_(ctW,ctL)==atomtype_(1,ctL))+...
+                        Jfegd*(~atomtype_(ctW,ctL)==atomtype_(1,ctL));
                 end
             else
-                if atomtype_(ctx+1,cty)==1%the other atom is RE
-                    AsimnextW(ctx,cty)=Jgdgd;
+                if atomtype_(ctW+1,ctL)==1%the other atom is RE
+                    AsimnextW(ctW,ctL)=Jgdgd;
                 else%the other atom is TM
-                    AsimnextW(ctx,cty)=Jfegd;
+                    AsimnextW(ctW,ctL)=Jfegd;
                 end
             end
             
-            if ctx==1
+            if ctW==1
                 if bc
-                    AsimpreviousW(ctx,cty)=0;
+                    AsimpreviousW(ctW,ctL)=0;
                 else
-                    AsimpreviousW(ctx,cty)=Jgdgd*(atomtype_(ctx,cty)==atomtype_(natomx,cty))+...
-                        Jfegd*(~atomtype_(ctx,cty)==atomtype_(natomx,cty));
+                    AsimpreviousW(ctW,ctL)=Jgdgd*(atomtype_(ctW,ctL)==atomtype_(natomW,ctL))+...
+                        Jfegd*(~atomtype_(ctW,ctL)==atomtype_(natomW,ctL));
                 end
             else
-                if atomtype_(ctx-1,cty)==1%the other atom is RE
-                    AsimpreviousW(ctx,cty)=Jgdgd;
+                if atomtype_(ctW-1,ctL)==1%the other atom is RE
+                    AsimpreviousW(ctW,ctL)=Jgdgd;
                 else%the other atom is TM
-                    AsimpreviousW(ctx,cty)=Jfegd;
+                    AsimpreviousW(ctW,ctL)=Jfegd;
                 end
             end
             
         else%local atom is TM
-            if cty==natomy
+            if ctL==natomL
                 if bc
-                    AsimnextL(ctx,cty)=0;
+                    AsimnextL(ctW,ctL)=0;
                 else
-                    AsimnextL(ctx,cty)=Jfefe*(atomtype_(ctx,cty)==atomtype_(ctx,1))+...
-                        Jfegd*(~atomtype_(ctx,cty)==atomtype_(ctx,1));
+                    AsimnextL(ctW,ctL)=Jfefe*(atomtype_(ctW,ctL)==atomtype_(ctW,1))+...
+                        Jfegd*(~atomtype_(ctW,ctL)==atomtype_(ctW,1));
                 end
             else
-                if atomtype_(ctx,cty+1)==1%the other atom is RE
-                    AsimnextL(ctx,cty)=Jfegd;
+                if atomtype_(ctW,ctL+1)==1%the other atom is RE
+                    AsimnextL(ctW,ctL)=Jfegd;
                 else%the other atom is TM
-                    AsimnextL(ctx,cty)=Jfefe;
+                    AsimnextL(ctW,ctL)=Jfefe;
                 end
             end
             
-            if cty==1
+            if ctL==1
                 if bc
-                    AsimpreviousL(ctx,cty)=0;
+                    AsimpreviousL(ctW,ctL)=0;
                 else
-                    AsimpreviousL(ctx,cty)=Jfefe*(atomtype_(ctx,cty)==atomtype_(ctx,natomy))+...
-                        Jfegd*(~atomtype_(ctx,cty)==atomtype_(ctx,natomy));
+                    AsimpreviousL(ctW,ctL)=Jfefe*(atomtype_(ctW,ctL)==atomtype_(ctW,natomL))+...
+                        Jfegd*(~atomtype_(ctW,ctL)==atomtype_(ctW,natomL));
                 end
             else
-                if atomtype_(ctx,cty-1)==1%the other atom is RE
-                    AsimpreviousL(ctx,cty)=Jfegd;
+                if atomtype_(ctW,ctL-1)==1%the other atom is RE
+                    AsimpreviousL(ctW,ctL)=Jfegd;
                 else%the other atom is TM
-                    AsimpreviousL(ctx,cty)=Jfefe;
+                    AsimpreviousL(ctW,ctL)=Jfefe;
                 end
             end
             
-            if ctx==natomx
+            if ctW==natomW
                 if bc
-                    AsimnextW(ctx,cty)=0;
+                    AsimnextW(ctW,ctL)=0;
                 else
-                    AsimnextW(ctx,cty)=Jfefe*(atomtype_(ctx,cty)==atomtype_(1,cty))+...
-                        Jfegd*(~atomtype_(ctx,cty)==atomtype_(1,cty));
+                    AsimnextW(ctW,ctL)=Jfefe*(atomtype_(ctW,ctL)==atomtype_(1,ctL))+...
+                        Jfegd*(~atomtype_(ctW,ctL)==atomtype_(1,ctL));
                 end
             else
-                if atomtype_(ctx+1,cty)==1%the other atom is RE
-                    AsimnextW(ctx,cty)=Jfegd;
+                if atomtype_(ctW+1,ctL)==1%the other atom is RE
+                    AsimnextW(ctW,ctL)=Jfegd;
                 else%the other atom is TM
-                    AsimnextW(ctx,cty)=Jfefe;
+                    AsimnextW(ctW,ctL)=Jfefe;
                 end
             end
             
-            if ctx==1
+            if ctW==1
                 if bc
-                    AsimpreviousW(ctx,cty)=0;
+                    AsimpreviousW(ctW,ctL)=0;
                 else
-                    AsimpreviousW(ctx,cty)=Jfefe*(atomtype_(ctx,cty)==atomtype_(natomx,cty))+...
-                        Jfegd*(~atomtype_(ctx,cty)==atomtype_(natomx,cty));
+                    AsimpreviousW(ctW,ctL)=Jfefe*(atomtype_(ctW,ctL)==atomtype_(natomW,ctL))+...
+                        Jfegd*(~atomtype_(ctW,ctL)==atomtype_(natomW,ctL));
                 end
             else
-                if atomtype_(ctx-1,cty)==1%the other atom is RE
-                    AsimpreviousW(ctx,cty)=Jfegd;
+                if atomtype_(ctW-1,ctL)==1%the other atom is RE
+                    AsimpreviousW(ctW,ctL)=Jfegd;
                 else%the other atom is TM
-                    AsimpreviousW(ctx,cty)=Jfefe;
+                    AsimpreviousW(ctW,ctL)=Jfefe;
                 end
             end
         end
     end
 end
 gamatom=scalgpu*(1+alp^2);
-clear ctx cty
+clear ctW ctL
 BFSOT=chi*BDSOT;
 BFSTT=chi*BDSTT;
 ct3run=round((runtime)/gpusave);
 ct3=1;
 while ~(ct3>ct3run)
     
-    mmx=zeros(natomx,natomy,gpusteps,'gpuArray');
-    mmy=zeros(natomx,natomy,gpusteps,'gpuArray');
-    mmz=zeros(natomx,natomy,gpusteps,'gpuArray');
+    mmx=zeros(natomW,natomL,gpusteps,'gpuArray');
+    mmy=zeros(natomW,natomL,gpusteps,'gpuArray');
+    mmz=zeros(natomW,natomL,gpusteps,'gpuArray');
     
     if ~(ct3==1)
         mmx(:,:,1)=tmp2xn0;mmy(:,:,1)=tmp2yn0;mmz(:,:,1)=tmp2zn0;
@@ -216,64 +216,64 @@ while ~(ct3>ct3run)
     Hthermaly=normrnd(0,Hthermal1);
     Hthermalz=normrnd(0,Hthermal1);
         else
-            Hthermalx=zeros(natomx,natomy,'gpuArray');
-            Hthermaly=zeros(natomx,natomy,'gpuArray');
-            Hthermalz=zeros(natomx,natomy,'gpuArray');
+            Hthermalx=zeros(natomW,natomL,'gpuArray');
+            Hthermaly=zeros(natomW,natomL,'gpuArray');
+            Hthermalz=zeros(natomW,natomL,'gpuArray');
         end
         if (0)%cpu calculation of dipole field, used for benchmaking
-            cpuhdipolex=zeros(natomx,natomy);
-            cpuhdipoley=zeros(natomx,natomy);
-            cpuhdipolez=zeros(natomx,natomy);
+            cpuhdipolex=zeros(natomW,natomL);
+            cpuhdipoley=zeros(natomW,natomL);
+            cpuhdipolez=zeros(natomW,natomL);
             mmxttmp=gather(mmxtmp);
             mmyttmp=gather(mmytmp);
             mmzttmp=gather(mmztmp);
-            for cty=1:natomy
-                for ctx=1:natomx
-                    for cty2=1:natomy
-                        for ctx2=1:natomx
-                            if ctx==ctx2 && cty==cty2
+            for ctL=1:natomL
+                for ctW=1:natomW
+                    for ctL2=1:natomL
+                        for ctW2=1:natomW
+                            if ctW==ctW2 && ctL==ctL2
                                 tmp=[0,0,0];
                             else
-                                dist=sqrt(((ctx2-ctx)*d)^2+((cty2-cty)*d)^2);
-                                rij=[(ctx2-ctx)*d,(cty2-cty)*d,0];
-                                sj=[mmxttmp(ctx2,cty2),mmyttmp(ctx2,cty2),mmzttmp(ctx2,cty2)];
-                                tmp=mu_0/(4*pi)*(-sj*gather(muigpu(ctx2,cty2))/dist^3+...
-                                    3*rij*gather(muigpu(ctx2,cty2))*dot(sj,rij)/dist^5);
+                                dist=sqrt(((ctW2-ctW)*d)^2+((ctL2-ctL)*d)^2);
+                                rij=[(ctW2-ctW)*d,(ctL2-ctL)*d,0];
+                                sj=[mmxttmp(ctW2,ctL2),mmyttmp(ctW2,ctL2),mmzttmp(ctW2,ctL2)];
+                                tmp=mu_0/(4*pi)*(-sj*gather(muigpu(ctW2,ctL2))/dist^3+...
+                                    3*rij*gather(muigpu(ctW2,ctL2))*dot(sj,rij)/dist^5);
                             end
-                            cpuhdipolex(ctx,cty)=cpuhdipolex(ctx,cty)+tmp(1);
-                            cpuhdipoley(ctx,cty)=cpuhdipoley(ctx,cty)+tmp(2);
-                            cpuhdipolez(ctx,cty)=cpuhdipolez(ctx,cty)+tmp(3);
+                            cpuhdipolex(ctW,ctL)=cpuhdipolex(ctW,ctL)+tmp(1);
+                            cpuhdipoley(ctW,ctL)=cpuhdipoley(ctW,ctL)+tmp(2);
+                            cpuhdipolez(ctW,ctL)=cpuhdipolez(ctW,ctL)+tmp(3);
                         end
                     end
                 end
             end
-            clear mmxttmp mmyttmp mmzttmp ctx cty ctx2 cty2 sj tmp
+            clear mmxttmp mmyttmp mmzttmp ctW ctL ctW2 ctL2 sj tmp
         end
-        hdipolex_=zeros(natomx,natomy,'gpuArray');
-        hdipoley_=zeros(natomx,natomy,'gpuArray');
-        hdipolez_=zeros(natomx,natomy,'gpuArray');
+        hdipolex_=zeros(natomW,natomL,'gpuArray');
+        hdipoley_=zeros(natomW,natomL,'gpuArray');
+        hdipolez_=zeros(natomW,natomL,'gpuArray');
         if dipolee
-            for cty=1:natomy%gpu calculation of dipole field, used for production
-                for ctx=1:natomx
-                    [rijx_tmp,rijy_tmp]=meshgrid(0:natomy-1,0:natomx-1);
-                    rijx_tmp=rijx_tmp-cty+1;%note:rijx_tmp corresponds to column
-                    rijy_tmp=rijy_tmp-ctx+1;%note:rijy_tmp corresponds to row
+            for ctL=1:natomL%gpu calculation of dipole field, used for production
+                for ctW=1:natomW
+                    [rijx_tmp,rijy_tmp]=meshgrid(0:natomL-1,0:natomW-1);
+                    rijx_tmp=rijx_tmp-ctL+1;%note:rijx_tmp corresponds to column
+                    rijy_tmp=rijy_tmp-ctW+1;%note:rijy_tmp corresponds to row
                     dist_=0.4*1e-9*sqrt(rijx_tmp.^2+rijy_tmp.^2);
                     rijx_=0.4*1e-9*rijx_tmp;rijy_=0.4*1e-9*rijy_tmp;
                     dot_sr=muigpu.*(mmxtmp.*rijy_+mmytmp.*rijx_);
                     hdipolex=mu_0/(4*pi)*(3*rijy_.*dot_sr./dist_.^5-muigpu.*mmxtmp./dist_.^3);%[T]
-                    hdipolex(ctx,cty)=0;
+                    hdipolex(ctW,ctL)=0;
                     hdipoley=mu_0/(4*pi)*(3*rijx_.*dot_sr./dist_.^5-muigpu.*mmytmp./dist_.^3);
-                    hdipoley(ctx,cty)=0;
+                    hdipoley(ctW,ctL)=0;
                     hdipolez=mu_0/(4*pi)*(-muigpu.*mmztmp./dist_.^3);
-                    hdipolez(ctx,cty)=0;
-                    hdipolex_(ctx,cty)=sum(sum(hdipolex));
-                    hdipoley_(ctx,cty)=sum(sum(hdipoley));
-                    hdipolez_(ctx,cty)=sum(sum(hdipolez));
+                    hdipolez(ctW,ctL)=0;
+                    hdipolex_(ctW,ctL)=sum(sum(hdipolex));
+                    hdipoley_(ctW,ctL)=sum(sum(hdipoley));
+                    hdipolez_(ctW,ctL)=sum(sum(hdipolez));
                 end
             end
         end
-        clear ctx cty ctx2 cty2
+        clear ctW ctL ctW2 ctL2
         hhx=hex_x+hani_x+hdmi_x+hdipolex_+Hext(1)+Hthermalx;
         hhy=hex_y+hani_y+hdmi_y+hdipoley_+Hext(2)+Hthermaly;
         hhz=hex_z+hani_z+hdmi_z+hdipolez_+Hext(3)+Hthermalz;

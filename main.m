@@ -14,7 +14,7 @@ thermalenable=0;%enable thermal field?
 %% use fixed atom distribution
 load_fixed_atom_distrib=0;%load fixed atom distribution
 save_fixed_atom_distrib=0;%save fixed atom distribution
-ddebugfilename='distrib.mat';
+ddebugfilename='distribtest.mat';
 if save_fixed_atom_distrib && load_fixed_atom_distrib
    error('only one of load_fixed_atom_distrib or save_fixed_atom_distrib can be enabled'); 
 end
@@ -29,11 +29,11 @@ end
 %% optional control
 %gpuDevice(1)%select GPU device
 %% system generation
-natomx=3;natomy=5;%no. of cells along vertical and horizontal direction, 
+natomW=3;natomL=5;%no. of cells along vertical and horizontal direction, 
 %note this is different to the x,y,z in h_ex or hdmi etc
 compositionn=0.1;%composition percentage (X) of RE element, e.g. GdX(FeCo)1-X
 d=0.4e-9;%[m],lattice constant
-natom=natomx*natomy;
+natom=natomW*natomL;
 systemgeneration();
 %% FiM parameters
 Ksim=0.4e-3*ele;%[J], easy-axis anisotropy
@@ -88,10 +88,10 @@ BDSTTTM=hbar/2*etaSTT*jcSTT/(msTM*tz);
 %% other parameters
 T=100;%[K]
 %% time control
-gpusave=2e-12;%how often saving gpu data
+gpusave=1e-12;%how often saving gpu data
 tstep=2e-15;
 gpusteps=round(gpusave/tstep);
-runtime=3*gpusave;%second run for dw motion
+runtime=2*gpusave;%second run for dw motion
 savetstep=100;%to reduce data size
 totstep=round(runtime/tstep);
 t=linspace(tstep,runtime,totstep);
@@ -102,34 +102,34 @@ end
 if load_fixed_atom_distrib
     load(ddebugfilename);
 elseif save_fixed_atom_distrib%save debug data
-    save('distrib.mat');   
+    save('distrib.mat');%change this to save(ddebugfilename);
     error('distribution mat file has been saved, run the program again by setting load_fixed_atom_distrib=1')
 end
 if loadstartm
     clear mx_init my_init mz_init atomtype_
     load('startm_x0.1_10x10.mat')
-    if natomx~=natomxcheck || natomx~=natomxcheck || compositionn~=compositionncheck
+    if natomW~=natomWcheck || natomL~=natomLcheck || compositionn~=compositionncheck
        error('system not consistent') 
     end
-    clear natomxcheck natomycheck compositionncheck
+    clear natomWcheck natomLcheck compositionncheck
     mx_init=mmxstart;
     my_init=mmystart;
     mz_init=mmzstart;
 end
-if(0)%view initial state
-    gridx = 1:natomx;
-    gridy = 1:natomy;
-    [gridplotx,gridploty] = meshgrid(gridx,gridy);
-    gridz=zeros(natomx,natomy);
+if(1)%view initial state
+    gridW = 1:natomW;
+    gridL = 1:natomL;
+    [gridplotx,gridploty] = meshgrid(gridL,gridW);
+    gridz=zeros(natomW,natomL);
     figure;hold on%initial magnetization
-    for cty=1:natomy
-        for ctx=1:natomx
-            if atomtype_(ctx,cty)==0%TM
-                quiver3(gridplotx(natomx-ctx+1,cty),gridploty(natomx-ctx+1,cty),gridz(ctx,cty),...
-                    mx_init(ctx,cty),my_init(ctx,cty),mz_init(ctx,cty),'r');
+    for ctL=1:natomL
+        for ctW=1:natomW
+            if atomtype_(ctW,ctL)==0%TM
+                quiver3(gridplotx(natomW-ctW+1,ctL),gridploty(natomW-ctW+1,ctL),gridz(ctW,ctL),...
+                    mx_init(ctW,ctL),my_init(ctW,ctL),mz_init(ctW,ctL),'r');
             else
-                quiver3(gridplotx(natomx-ctx+1,cty),gridploty(natomx-ctx+1,cty),gridz(ctx,cty),...
-                    mx_init(ctx,cty),my_init(ctx,cty),mz_init(ctx,cty),'b');
+                quiver3(gridplotx(natomW-ctW+1,ctL),gridploty(natomW-ctW+1,ctL),gridz(ctW,ctL),...
+                    mx_init(ctW,ctL),my_init(ctW,ctL),mz_init(ctW,ctL),'b');
             end
         end
     end
@@ -137,7 +137,7 @@ end
 %% dynamic calc
 integrate_llg(); toc
 %% save data
-save('final.mat')
+save('finalnew.mat')
 
 
 

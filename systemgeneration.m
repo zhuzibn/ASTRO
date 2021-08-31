@@ -1,46 +1,46 @@
 distrib();
-mx_init=zeros(natomx,natomy);%initial magnetization
-my_init=zeros(natomx,natomy);
-mz_init=zeros(natomx,natomy);
+mx_init=zeros(natomW,natomL);%initial magnetization
+my_init=zeros(natomW,natomL);
+mz_init=zeros(natomW,natomL);
 
 if dwcalc
     phi_=0;
-    for cty=1:natomy
-        for ctx=1:natomx
-            if cty<round(natomy/2)
-                if atomtype_(ctx,cty)==0%TM
+    for ctL=1:natomL
+        for ctW=1:natomW
+            if ctL<round(natomL/2)
+                if atomtype_(ctW,ctL)==0%TM
                     thet_=5/180*pi;
                 else
                     thet_=(5+180)/180*pi;
                 end
-                mx_init(ctx,cty)=sin(thet_)*cos(phi_);
-                my_init(ctx,cty)=sin(thet_)*sin(phi_);
-                mz_init(ctx,cty)=cos(thet_);
+                mx_init(ctW,ctL)=sin(thet_)*cos(phi_);
+                my_init(ctW,ctL)=sin(thet_)*sin(phi_);
+                mz_init(ctW,ctL)=cos(thet_);
             else
-                if atomtype_(ctx,cty)==0%TM
+                if atomtype_(ctW,ctL)==0%TM
                     thet_=(5+180)/180*pi;
                 else
                     thet_=5/180*pi;
                 end
-                mx_init(ctx,cty)=sin(thet_)*cos(phi_);
-                my_init(ctx,cty)=sin(thet_)*sin(phi_);
-                mz_init(ctx,cty)=cos(thet_);
+                mx_init(ctW,ctL)=sin(thet_)*cos(phi_);
+                my_init(ctW,ctL)=sin(thet_)*sin(phi_);
+                mz_init(ctW,ctL)=cos(thet_);
             end
         end
     end
 else
     phi_=0;
-    for cty=1:natomy
-        for ctx=1:natomx
-            if atomtype_(ctx,cty)==0%TM
+    for ctL=1:natomL
+        for ctW=1:natomW
+            if atomtype_(ctW,ctL)==0%TM
                 thet_=5/180*pi;
             else
                 thet_=(5+180)/180*pi;
             end
-            mx_init(ctx,cty)=sin(thet_)*cos(phi_);
-            my_init(ctx,cty)=sin(thet_)*sin(phi_);
-            mz_init(ctx,cty)=cos(thet_);
+            mx_init(ctW,ctL)=sin(thet_)*cos(phi_);
+            my_init(ctW,ctL)=sin(thet_)*sin(phi_);
+            mz_init(ctW,ctL)=cos(thet_);
         end
     end
 end
-clear cty ctx
+clear ctL ctW
