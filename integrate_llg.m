@@ -26,10 +26,10 @@ for ctL=1:natomL
         if atomtype_(ctW,ctL)==1%local atom is RE
             if ctL==natomL
                 if bc
-                AsimnextL(ctW,ctL)=0;
+                    AsimnextL(ctW,ctL)=0;
                 else
-                AsimnextL(ctW,ctL)=Jgdgd*(atomtype_(ctW,ctL)==atomtype_(ctW,1))+...
-                    Jfegd*(~atomtype_(ctW,ctL)==atomtype_(ctW,1));  
+                    AsimnextL(ctW,ctL)=Jgdgd*(atomtype_(ctW,ctL)==atomtype_(ctW,1))+...
+                        Jfegd*(~atomtype_(ctW,ctL)==atomtype_(ctW,1));
                 end
             else
                 if atomtype_(ctW,ctL+1)==1%the other atom is RE
@@ -151,6 +151,62 @@ gamatom=scalgpu*(1+alp^2);
 clear ctW ctL
 BFSOT=chi*BDSOT;
 BFSTT=chi*BDSTT;
+
+if dipolemode==3 %group atoms into macrocells
+    if ~mod(natomW,natom_mc_W)
+        nW_group=natomW/natom_mc_W;%number of macrocells along width direction
+    else
+        error('natomW should be multiple integer times of natom_mc_W')
+    end
+    
+    if ~mod(natomL,natom_mc_L)
+        nL_group=natomL/natom_mc_L;%number of macrocells along length direction
+    else
+        error('natomL should be multiple integer times of natom_mc_L')
+    end
+    
+    n_macrocell=nW_group*nL_group;
+    volume_mc=(natom_mc_W*d)*(natom_mc_L*d)*d;
+    
+    pmcW_=zeros(nW_group,nL_group);
+    pmcL_=zeros(nW_group,nL_group);
+    pmcz_=zeros(nW_group,nL_group);
+
+    if(0)%use simpler numbers for debug
+        d=1.1;
+        muigpu=[1.2,1.4,1.2,1.2;...
+            1.2,1.2,1.2,1.2;...
+            1.2,1.2,1.2,1.4;...
+            1.2,1.2,1.2,1.2];
+        mmxtmp=[0.08,-0.08,0.08,0.08;...
+            0.08,0.08,0.08,0.08;...
+            0.08,0.08,0.08,-0.08;...
+            0.08,0.08,0.08,0.08];
+        mmytmp=zeros(4,4);
+        mmztmp=zeros(4,4);
+        
+    end
+    
+    [rijL_tmp,rijW_tmp]=meshgrid(1:natomL,1:natomW);
+    distL_mui=rijL_tmp.*muigpu;
+    distW_mui=rijW_tmp.*muigpu;
+    for ctL2=1:nL_group
+        for ctW2=1:nW_group
+            W_start=natom_mc_W*(ctW2-1)+1;
+            W_end=natom_mc_W*ctW2;
+            L_start=natom_mc_L*(ctL2-1)+1;
+            L_end=natom_mc_L*ctL2;
+            
+            sum_distL_mui=sum(sum(distL_mui(W_start:W_end,L_start:L_end)));
+            sum_distW_mui=sum(sum(distW_mui(W_start:W_end,L_start:L_end)));
+            sum_mui=sum(sum(muigpu(W_start:W_end,L_start:L_end)));
+            pmcL_(ctW2,ctL2)=d*sum_distL_mui/sum_mui;
+            pmcW_(ctW2,ctL2)=d*sum_distW_mui/sum_mui;
+        end
+    end
+    clear ctL2 ctW2   
+end
+
 ct3run=round((runtime)/gpusave);
 ct3=1;
 while ~(ct3>ct3run)
@@ -167,6 +223,7 @@ while ~(ct3>ct3run)
     clear tmpx tmpy tmpz
     ct1=1; %count 1
     while ct1<gpusteps
+
         mmxtmp=mmx(:,:,ct1);
         mmytmp=mmy(:,:,ct1);
         mmztmp=mmz(:,:,ct1);
@@ -209,71 +266,18 @@ while ~(ct3>ct3run)
         hdmi_y=Dsim./muigpu.*(-mmznextW+mmzpreviousW);
         hdmi_z=Dsim./muigpu.*(mmxnextL-mmxpreviousL+mmynextW-mmypreviousW);
         if thermalenable
-           %equation (15) in Atomistic spin model simulations of magnetic nanomaterials
-    %calculate once for one time step
-    Hthermal1=sqrt(2*kb*T*alp./(muigpu.*gamatom.*tstep));%[T]
-    Hthermalx=normrnd(0,Hthermal1);
-    Hthermaly=normrnd(0,Hthermal1);
-    Hthermalz=normrnd(0,Hthermal1);
+            %equation (15) in Atomistic spin model simulations of magnetic nanomaterials
+            %calculate once for one time step
+            Hthermal1=sqrt(2*kb*T*alp./(muigpu.*gamatom.*tstep));%[T]
+            Hthermalx=normrnd(0,Hthermal1);
+            Hthermaly=normrnd(0,Hthermal1);
+            Hthermalz=normrnd(0,Hthermal1);
         else
             Hthermalx=zeros(natomW,natomL,'gpuArray');
             Hthermaly=zeros(natomW,natomL,'gpuArray');
             Hthermalz=zeros(natomW,natomL,'gpuArray');
         end
-        if (0)%cpu calculation of dipole field, used for benchmaking
-            cpuhdipolex=zeros(natomW,natomL);
-            cpuhdipoley=zeros(natomW,natomL);
-            cpuhdipolez=zeros(natomW,natomL);
-            mmxttmp=gather(mmxtmp);
-            mmyttmp=gather(mmytmp);
-            mmzttmp=gather(mmztmp);
-            for ctL=1:natomL
-                for ctW=1:natomW
-                    for ctL2=1:natomL
-                        for ctW2=1:natomW
-                            if ctW==ctW2 && ctL==ctL2
-                                tmp=[0,0,0];
-                            else
-                                dist=sqrt(((ctW2-ctW)*d)^2+((ctL2-ctL)*d)^2);
-                                rij=[(ctW2-ctW)*d,(ctL2-ctL)*d,0];
-                                sj=[mmxttmp(ctW2,ctL2),mmyttmp(ctW2,ctL2),mmzttmp(ctW2,ctL2)];
-                                tmp=mu_0/(4*pi)*(-sj*gather(muigpu(ctW2,ctL2))/dist^3+...
-                                    3*rij*gather(muigpu(ctW2,ctL2))*dot(sj,rij)/dist^5);
-                            end
-                            cpuhdipolex(ctW,ctL)=cpuhdipolex(ctW,ctL)+tmp(1);
-                            cpuhdipoley(ctW,ctL)=cpuhdipoley(ctW,ctL)+tmp(2);
-                            cpuhdipolez(ctW,ctL)=cpuhdipolez(ctW,ctL)+tmp(3);
-                        end
-                    end
-                end
-            end
-            clear mmxttmp mmyttmp mmzttmp ctW ctL ctW2 ctL2 sj tmp
-        end
-        hdipolex_=zeros(natomW,natomL,'gpuArray');
-        hdipoley_=zeros(natomW,natomL,'gpuArray');
-        hdipolez_=zeros(natomW,natomL,'gpuArray');
-        if dipolee
-            for ctL=1:natomL%gpu calculation of dipole field, used for production
-                for ctW=1:natomW
-                    [rijx_tmp,rijy_tmp]=meshgrid(0:natomL-1,0:natomW-1);
-                    rijx_tmp=rijx_tmp-ctL+1;%note:rijx_tmp corresponds to column
-                    rijy_tmp=rijy_tmp-ctW+1;%note:rijy_tmp corresponds to row
-                    dist_=0.4*1e-9*sqrt(rijx_tmp.^2+rijy_tmp.^2);
-                    rijx_=0.4*1e-9*rijx_tmp;rijy_=0.4*1e-9*rijy_tmp;
-                    dot_sr=muigpu.*(mmxtmp.*rijy_+mmytmp.*rijx_);
-                    hdipolex=mu_0/(4*pi)*(3*rijy_.*dot_sr./dist_.^5-muigpu.*mmxtmp./dist_.^3);%[T]
-                    hdipolex(ctW,ctL)=0;
-                    hdipoley=mu_0/(4*pi)*(3*rijx_.*dot_sr./dist_.^5-muigpu.*mmytmp./dist_.^3);
-                    hdipoley(ctW,ctL)=0;
-                    hdipolez=mu_0/(4*pi)*(-muigpu.*mmztmp./dist_.^3);
-                    hdipolez(ctW,ctL)=0;
-                    hdipolex_(ctW,ctL)=sum(sum(hdipolex));
-                    hdipoley_(ctW,ctL)=sum(sum(hdipoley));
-                    hdipolez_(ctW,ctL)=sum(sum(hdipolez));
-                end
-            end
-        end
-        clear ctW ctL ctW2 ctL2
+        dipole_calc();
         hhx=hex_x+hani_x+hdmi_x+hdipolex_+Hext(1)+Hthermalx;
         hhy=hex_y+hani_y+hdmi_y+hdipoley_+Hext(2)+Hthermaly;
         hhz=hex_z+hani_z+hdmi_z+hdipolez_+Hext(3)+Hthermalz;

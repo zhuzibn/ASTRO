@@ -7,14 +7,20 @@ constantfile;
 clear gam
 rk4=1;%1:rk4,0:heun Method,2:4th predictor-corrector
 bc=1;%0.periodic condition;1,not periodic
-dipolee=0;%enable dipole?
+dipolemode=3;
+%0:not calcualte dipole, 1: direct calculation using CPU
+%2:direct calculation using CPU, 3:calculation using macrocell
+if dipolemode==3
+    natom_mc_W=5;%number of atoms in the macrocell along x direction
+    natom_mc_L=6;%number of atoms in the macrocell along y direction
+end
 DMIenable=0;
 dwcalc=0;%1:simulate dw motion 0: no domain wall
 thermalenable=0;%enable thermal field?
 %% use fixed atom distribution
-load_fixed_atom_distrib=0;%load fixed atom distribution
+load_fixed_atom_distrib=1;%load fixed atom distribution
 save_fixed_atom_distrib=0;%save fixed atom distribution
-ddebugfilename='distribtest.mat';
+ddebugfilename='dipolemacrocell_test.mat';
 if save_fixed_atom_distrib && load_fixed_atom_distrib
    error('only one of load_fixed_atom_distrib or save_fixed_atom_distrib can be enabled'); 
 end
@@ -29,7 +35,7 @@ end
 %% optional control
 %gpuDevice(1)%select GPU device
 %% system generation
-natomW=3;natomL=5;%no. of cells along vertical and horizontal direction, 
+natomW=20;natomL=60;%no. of cells along vertical and horizontal direction, 
 %note this is different to the x,y,z in h_ex or hdmi etc
 compositionn=0.1;%composition percentage (X) of RE element, e.g. GdX(FeCo)1-X
 d=0.4e-9;%[m],lattice constant
@@ -101,8 +107,9 @@ if (SOT_DLT || SOT_FLT) && ~(rk4==1)
 end
 if load_fixed_atom_distrib
     load(ddebugfilename);
+    dipolemode=3;%to delete
 elseif save_fixed_atom_distrib%save debug data
-    save('distrib.mat');%change this to save(ddebugfilename);
+    save(ddebugfilename);%change this to save(ddebugfilename);
     error('distribution mat file has been saved, run the program again by setting load_fixed_atom_distrib=1')
 end
 if loadstartm
@@ -116,7 +123,7 @@ if loadstartm
     my_init=mmystart;
     mz_init=mmzstart;
 end
-if(1)%view initial state
+if(0)%view initial state
     gridW = 1:natomW;
     gridL = 1:natomL;
     [gridplotx,gridploty] = meshgrid(gridL,gridW);
