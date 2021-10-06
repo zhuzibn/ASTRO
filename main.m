@@ -7,12 +7,12 @@ constantfile;
 clear gam
 rk4=1;%1:rk4,0:heun Method,2:4th predictor-corrector
 bc=1;%0.periodic condition;1,not periodic
-dipolemode=3;
+dipolemode=1;
 %0:not calcualte dipole, 1: direct calculation using CPU
 %2:direct calculation using CPU, 3:calculation using macrocell
 if dipolemode==3
-    natom_mc_W=5;%number of atoms in the macrocell along x direction
-    natom_mc_L=6;%number of atoms in the macrocell along y direction
+    natom_mc_W=2;%number of atoms in the macrocell along x direction
+    natom_mc_L=2;%number of atoms in the macrocell along y direction
 end
 DMIenable=0;
 dwcalc=0;%1:simulate dw motion 0: no domain wall
@@ -35,7 +35,7 @@ end
 %% optional control
 %gpuDevice(1)%select GPU device
 %% system generation
-natomW=20;natomL=60;%no. of cells along vertical and horizontal direction, 
+natomW=3;natomL=4;%no. of cells along vertical and horizontal direction, 
 %note this is different to the x,y,z in h_ex or hdmi etc
 compositionn=0.1;%composition percentage (X) of RE element, e.g. GdX(FeCo)1-X
 d=0.4e-9;%[m],lattice constant
@@ -107,7 +107,6 @@ if (SOT_DLT || SOT_FLT) && ~(rk4==1)
 end
 if load_fixed_atom_distrib
     load(ddebugfilename);
-    dipolemode=3;%to delete
 elseif save_fixed_atom_distrib%save debug data
     save(ddebugfilename);%change this to save(ddebugfilename);
     error('distribution mat file has been saved, run the program again by setting load_fixed_atom_distrib=1')

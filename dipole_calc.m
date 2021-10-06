@@ -1,7 +1,7 @@
 switch dipolemode
     case 0
         
-    case 1%the code might be wrong, don't use for now
+    case 1
         %cpu calculation of dipole field, used for benchmaking
         cpuhdipolex=zeros(natomW,natomL);
         cpuhdipoley=zeros(natomW,natomL);
@@ -17,10 +17,10 @@ switch dipolemode
                             tmp=[0,0,0];
                         else
                             dist=sqrt(((ctW2-ctW)*d)^2+((ctL2-ctL)*d)^2);
-                            rij=[(ctW2-ctW)*d,(ctL2-ctL)*d,0];
+                            rij=[(ctL2-ctL)*d,(ctW2-ctW)*d,0];
                             sj=[mmxttmp(ctW2,ctL2),mmyttmp(ctW2,ctL2),mmzttmp(ctW2,ctL2)];
-                            tmp=mu_0/(4*pi)*(-sj*gather(muigpu(ctW2,ctL2))/dist^3+...
-                                3*rij*gather(muigpu(ctW2,ctL2))*dot(sj,rij)/dist^5);
+                            tmp=mu_0/(4*pi)*(3*rij*gather(muigpu(ctW2,ctL2))*dot(sj,rij)/dist^5-...
+                                sj*gather(muigpu(ctW2,ctL2))/dist^3);
                         end
                         cpuhdipolex(ctW,ctL)=cpuhdipolex(ctW,ctL)+tmp(1);
                         cpuhdipoley(ctW,ctL)=cpuhdipoley(ctW,ctL)+tmp(2);
