@@ -1,6 +1,8 @@
 switch dipolemode
     case 0
-        
+        hdipolex_=zeros(natomW,natomL);
+        hdipoley_=zeros(natomW,natomL);
+        hdipolez_=zeros(natomW,natomL);
     case 1
         %cpu calculation of dipole field, used for benchmaking
         cpuhdipolex=zeros(natomW,natomL);
@@ -158,24 +160,24 @@ switch dipolemode
                 3*dot(m00,r00)*r00/(norm(r00))^5-m00/(norm(r00))^3+...
                 3*dot(m11,r11)*r11/(norm(r11))^5-m11/(norm(r11))^3)-mu_0/3*m01/volume_mc;
             
-                    hdipole10=mu_0/(4*pi)*(3*dot(m00,r00)*r00/(norm(r00))^5-m00/(norm(r00))^3+...
-                        3*dot(m01,r01)*r01/(norm(r01))^5-m01/(norm(r01))^3+...
-                        3*dot(m11,r11)*r11/(norm(r11))^5-m11/(norm(r11))^3)-mu_0/3*m10/volume_mc;
-                    
-                    hdipole11=mu_0/(4*pi)*(3*dot(m10,r10)*r10/(norm(r10))^5-m10/(norm(r10))^3+...
-                        3*dot(m01,r01)*r01/(norm(r01))^5-m01/(norm(r01))^3+...
-                        3*dot(m00,r00)*r00/(norm(r00))^5-m00/(norm(r00))^3)-mu_0/3*m11/volume_mc;
-                %}
-                %% the below comparisons should be zero
-                
-                hdipole00(1)-hdipolex_mc(1,1)
-                hdipole00(2)-hdipoley_mc(1,1)
-                hdipole00(3)-hdipolez_mc(1,1)
-                
-                hdipole01(1)-hdipolex_mc(1,2)
-                hdipole01(2)-hdipoley_mc(1,2)
-                hdipole01(3)-hdipolez_mc(1,2)
-                %{
+            hdipole10=mu_0/(4*pi)*(3*dot(m00,r00)*r00/(norm(r00))^5-m00/(norm(r00))^3+...
+                3*dot(m01,r01)*r01/(norm(r01))^5-m01/(norm(r01))^3+...
+                3*dot(m11,r11)*r11/(norm(r11))^5-m11/(norm(r11))^3)-mu_0/3*m10/volume_mc;
+            
+            hdipole11=mu_0/(4*pi)*(3*dot(m10,r10)*r10/(norm(r10))^5-m10/(norm(r10))^3+...
+                3*dot(m01,r01)*r01/(norm(r01))^5-m01/(norm(r01))^3+...
+                3*dot(m00,r00)*r00/(norm(r00))^5-m00/(norm(r00))^3)-mu_0/3*m11/volume_mc;
+            %}
+            %% the below comparisons should be zero
+            
+            hdipole00(1)-hdipolex_mc(1,1)
+            hdipole00(2)-hdipoley_mc(1,1)
+            hdipole00(3)-hdipolez_mc(1,1)
+            
+            hdipole01(1)-hdipolex_mc(1,2)
+            hdipole01(2)-hdipoley_mc(1,2)
+            hdipole01(3)-hdipolez_mc(1,2)
+            %{
                     hdipole10(1)-hdipolex_mc(2,1)
                     hdipole10(2)-hdipoley_mc(2,1)
                     hdipole10(3)-hdipolez_mc(2,1)
@@ -183,7 +185,7 @@ switch dipolemode
                     hdipole11(1)-hdipolex_mc(2,2)
                     hdipole11(2)-hdipoley_mc(2,2)
                     hdipole11(3)-hdipolez_mc(2,2)
-                %}
+            %}
         end
         
         clear ctW ctL ctW2 ctL2
