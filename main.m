@@ -2,7 +2,6 @@
 % require nvidia GPU
 clear all;clc;close all;tic
 %% control parameter
-loadstartm=0;%1:load mat file; 0:direct calculate
 constantfile;
 clear gam
 rk4=1;%1:rk4,0:heun Method,2:4th predictor-corrector
@@ -111,17 +110,7 @@ elseif save_fixed_atom_distrib%save debug data
     save(ddebugfilename);%change this to save(ddebugfilename);
     error('distribution mat file has been saved, run the program again by setting load_fixed_atom_distrib=1')
 end
-if loadstartm
-    clear mx_init my_init mz_init atomtype_
-    load('startm_x0.1_10x10.mat')
-    if natomW~=natomWcheck || natomL~=natomLcheck || compositionn~=compositionncheck
-       error('system not consistent') 
-    end
-    clear natomWcheck natomLcheck compositionncheck
-    mx_init=mmxstart;
-    my_init=mmystart;
-    mz_init=mmzstart;
-end
+
 if(0)%view initial state
     gridW = 1:natomW;
     gridL = 1:natomL;
