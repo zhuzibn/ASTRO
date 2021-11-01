@@ -94,9 +94,9 @@ BDSTTTM=hbar/2*etaSTT*jcSTT/(msTM*tz);
 T=100;%[K]
 %% time control
 gpusave=1e-12;%how often saving gpu data
-tstep=2e-15;
+tstep=2e-16;
 gpusteps=round(gpusave/tstep);
-runtime=2*gpusave;%second run for dw motion
+runtime=20*gpusave;%second run for dw motion
 savetstep=100;%to reduce data size
 totstep=round(runtime/tstep);
 t=linspace(tstep,runtime,totstep);
