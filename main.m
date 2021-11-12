@@ -6,7 +6,7 @@ constantfile;
 clear gam
 rk4=1;%1:rk4,0:heun Method,2:4th predictor-corrector
 bc=1;%0.periodic condition;1,not periodic
-dipolemode=1;
+dipolemode=0;
 %0:not calcualte dipole, 1: direct calculation using CPU
 %2:direct calculation using CPU, 3:calculation using macrocell
 if dipolemode==3
@@ -19,7 +19,6 @@ thermalenable=0;%enable thermal field?
 %% use fixed atom distribution
 load_fixed_atom_distrib=1;%load fixed atom distribution
 save_fixed_atom_distrib=0;%save fixed atom distribution
-ddebugfilename='dipolemacrocell_test.mat';
 if save_fixed_atom_distrib && load_fixed_atom_distrib
    error('only one of load_fixed_atom_distrib or save_fixed_atom_distrib can be enabled'); 
 end
@@ -34,12 +33,19 @@ end
 %% optional control
 %gpuDevice(1)%select GPU device
 %% system generation
-natomW=3;natomL=4;%no. of cells along vertical and horizontal direction, 
+natomW=10;natomL=15;%no. of cells along vertical and horizontal direction, 
 %note this is different to the x,y,z in h_ex or hdmi etc
 compositionn=0.1;%composition percentage (X) of RE element, e.g. GdX(FeCo)1-X
 d=0.4e-9;%[m],lattice constant
 natom=natomW*natomL;
 systemgeneration();
+if load_fixed_atom_distrib
+    clear atomtype_
+    load('atomtypee.mat');
+elseif save_fixed_atom_distrib%save debug data
+    save('atomtypee.mat','atomtype_');%change this to save(ddebugfilename);
+    error('distribution mat file has been saved, run the program again by setting load_fixed_atom_distrib=1')
+end
 %% FiM parameters
 Ksim=0.807246e-23;%[J], easy-axis anisotropy, 2011-nature-I. Radu, 
 %Thanks Renjie and Zhengde for pointing out a too large value is used in previous version
@@ -97,19 +103,12 @@ T=100;%[K]
 gpusave=1e-12;%how often saving gpu data
 tstep=2e-16;
 gpusteps=round(gpusave/tstep);
-runtime=20*gpusave;%second run for dw motion
+runtime=5*gpusave;%second run for dw motion
 savetstep=100;%to reduce data size
 totstep=round(runtime/tstep);
 t=linspace(tstep,runtime,totstep);
-
 if (SOT_DLT || SOT_FLT) && ~(rk4==1)
     error('only rk4 is implemented for spin torque driven')
-end
-if load_fixed_atom_distrib
-    load(ddebugfilename);
-elseif save_fixed_atom_distrib%save debug data
-    save(ddebugfilename);%change this to save(ddebugfilename);
-    error('distribution mat file has been saved, run the program again by setting load_fixed_atom_distrib=1')
 end
 
 if(0)%view initial state
