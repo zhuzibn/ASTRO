@@ -41,8 +41,9 @@ d=0.4e-9;%[m],lattice constant
 natom=natomW*natomL;
 systemgeneration();
 %% FiM parameters
-Ksim=0.4e-3*ele;%[J], easy-axis anisotropy
-Jgdgd=-1.26e-21;Jfefe=-2.835e-21;Jfegd=1.09e-21;%[J/link][1]
+Ksim=0.807246e-23;%[J], easy-axis anisotropy, 2011-nature-I. Radu, 
+%Thanks Renjie and Zhengde for pointing out a too large value is used in previous version
+Jgdgd=-1.26e-21;Jfefe=-2.835e-21;Jfegd=1.09e-21;%[J/link], 2011-nature-I. Radu
 gTM=2.2;gRE=2;%g-factor
 gamTM=gTM*mub/(hbar*ele);%1/(s.T)refer to "PRL 97, 217202 (2006), Jiang Xin"
 gamRE=gRE*mub/(hbar*ele);
