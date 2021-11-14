@@ -8,3 +8,10 @@ for ctL=1:natomL
     end
 end
 clear tmp ctW ctL ctz
+if load_fixed_atom_distrib
+    clear atomtype_
+    load('atomtypee.mat');
+elseif save_fixed_atom_distrib%save debug data
+    save('atomtypee.mat','atomtype_');%change this to save(ddebugfilename);
+    error('distribution mat file has been saved, run the program again by setting load_fixed_atom_distrib=1')
+end

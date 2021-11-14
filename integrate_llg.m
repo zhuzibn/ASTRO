@@ -1,6 +1,6 @@
-mmx_=zeros(natomW,natomL,totstep);
-mmy_=zeros(natomW,natomL,totstep);
-mmz_=zeros(natomW,natomL,totstep);
+mmx_=zeros(natomW,natomL,gpurun_number*final_m_savestep);
+mmy_=zeros(natomW,natomL,gpurun_number*final_m_savestep);
+mmz_=zeros(natomW,natomL,gpurun_number*final_m_savestep);
 
 BDSOT=zeros(natomW,natomL,'gpuArray');
 BDSTT=zeros(natomW,natomL,'gpuArray');
@@ -321,16 +321,16 @@ while ~(ct3>ct3run)
     tmp2xn0=mmx(:,:,end);tmp2yn0=mmy(:,:,end);tmp2zn0=mmz(:,:,end);
     tmp2xn1=mmx(:,:,end-1);tmp2yn1=mmy(:,:,end-1);tmp2zn1=mmz(:,:,end-1);
     tmp2xn2=mmx(:,:,end-2);tmp2yn2=mmy(:,:,end-2);tmp2zn2=mmz(:,:,end-2);
-    mmx_(:,:,(ct3-1)*gpusteps+1:ct3*gpusteps)=gather(mmx);
-    mmy_(:,:,(ct3-1)*gpusteps+1:ct3*gpusteps)=gather(mmy);
-    mmz_(:,:,(ct3-1)*gpusteps+1:ct3*gpusteps)=gather(mmz);
+    mmx_(:,:,(ct3-1)*final_m_savestep+1:ct3*final_m_savestep)=gather(mmx(:,:,1:savetstep:end));
+    mmy_(:,:,(ct3-1)*final_m_savestep+1:ct3*final_m_savestep)=gather(mmy(:,:,1:savetstep:end));
+    mmz_(:,:,(ct3-1)*final_m_savestep+1:ct3*final_m_savestep)=gather(mmz(:,:,1:savetstep:end));
     ct3=ct3+1;
 end
 
 clear mmx mmy mmz tmp2xn0 tmp2yn0 tmp2zn0 tmp2xn1 tmp2yn1 tmp2zn1
 clear tmp2xn2 tmp2yn2 tmp2zn2
-mmx=mmx_(:,:,1:savetstep:end);
-mmy=mmy_(:,:,1:savetstep:end);
-mmz=mmz_(:,:,1:savetstep:end);
+mmx=mmx_;
+mmy=mmy_;
+mmz=mmz_;
 clear mmx_ mmy_ mmz_
 t=t(1:savetstep:end);

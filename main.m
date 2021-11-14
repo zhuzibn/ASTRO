@@ -39,13 +39,6 @@ compositionn=0.1;%composition percentage (X) of RE element, e.g. GdX(FeCo)1-X
 d=0.4e-9;%[m],lattice constant
 natom=natomW*natomL;
 systemgeneration();
-if load_fixed_atom_distrib
-    clear atomtype_
-    load('atomtypee.mat');
-elseif save_fixed_atom_distrib%save debug data
-    save('atomtypee.mat','atomtype_');%change this to save(ddebugfilename);
-    error('distribution mat file has been saved, run the program again by setting load_fixed_atom_distrib=1')
-end
 %% FiM parameters
 Ksim=0.807246e-23;%[J], easy-axis anisotropy, 2011-nature-I. Radu, 
 %Thanks Renjie and Zhengde for pointing out a too large value is used in previous version
@@ -101,12 +94,19 @@ BDSTTTM=hbar/2*etaSTT*jcSTT/(msTM*tz);
 T=100;%[K]
 %% time control
 gpusave=1e-12;%how often saving gpu data
+gpurun_number=3;
 tstep=2e-16;
 gpusteps=round(gpusave/tstep);
-runtime=5*gpusave;%second run for dw motion
+runtime=gpurun_number*gpusave;%second run for dw motion
 savetstep=100;%to reduce data size
 totstep=round(runtime/tstep);
 t=linspace(tstep,runtime,totstep);
+
+tmp1=ones(1,gpusteps);
+tmp2=tmp1(1:savetstep:end);
+final_m_savestep=size(tmp2,2);
+clear tmp1 tmp2
+
 if (SOT_DLT || SOT_FLT) && ~(rk4==1)
     error('only rk4 is implemented for spin torque driven')
 end
