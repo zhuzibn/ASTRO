@@ -96,11 +96,16 @@ T=100;%[K]
 gpusave=1e-12;%how often saving gpu data
 gpurun_number=3;
 tstep=2e-16;
+savetstep=100;%this is used to reduce data size
+
 gpusteps=round(gpusave/tstep);
 runtime=gpurun_number*gpusave;%second run for dw motion
-savetstep=100;%to reduce data size
 totstep=round(runtime/tstep);
-t=linspace(tstep,runtime,totstep);
+t=linspace(tstep,runtime,totstep);%This need to be optimized
+
+if ~mod(gpusteps,savetstep)==0
+    error('gpusteps should be multiple integer times of savetstep, otherwise there might be errors')
+end
 
 tmp1=ones(1,gpusteps);
 tmp2=tmp1(1:savetstep:end);
