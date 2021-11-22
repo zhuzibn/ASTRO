@@ -300,6 +300,15 @@ while ~(ct3>ct3run)
         end
         
         mmx(:,:,ct1+1)=sxx; mmy(:,:,ct1+1)=syy; mmz(:,:,ct1+1)=szz;
+        if enablefixedge
+            mmx(:,1:fixededgeL,ct1+1)=mxleft;
+            mmy(:,1:fixededgeL,ct1+1)=myleft;
+            mmz(:,1:fixededgeL,ct1+1)=mzleft;
+            
+            mmx(:,natomL-fixededgeL:end,ct1+1)=mxright;
+            mmy(:,natomL-fixededgeL:end,ct1+1)=myright;
+            mmz(:,natomL-fixededgeL:end,ct1+1)=mzright;
+        end
         ct1=ct1+1;
         if ~(ct3==1 && ~(ct1>3)) && ct1>3
             tmpxn0=mmx(:,:,ct1);tmpyn0=mmy(:,:,ct1);tmpzn0=mmz(:,:,ct1);

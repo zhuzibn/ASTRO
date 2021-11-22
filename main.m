@@ -16,6 +16,16 @@ end
 DMIenable=0;
 dwcalc=0;%1:simulate dw motion 0: no domain wall
 thermalenable=0;%enable thermal field?
+enablefixedge=0;%fix the atoms at the edge
+if enablefixedge
+    fixededgeL=3;%No of atoms fixed along Length
+    mxleft=0;
+    myleft=0;
+    mzleft=1;
+    mxright=0;
+    myright=0;
+    mzright=-1;  
+end
 %% use fixed atom distribution
 load_fixed_atom_distrib=1;%load fixed atom distribution
 save_fixed_atom_distrib=0;%save fixed atom distribution
