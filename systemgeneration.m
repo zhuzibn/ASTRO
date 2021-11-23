@@ -44,3 +44,15 @@ else
     end
 end
 clear ctL ctW
+
+if loadstartm
+    clear mx_init my_init mz_init
+    load(startmname);
+    if natomW~=natomWcheck || natomL~=natomLcheck
+       error('system not consistent') 
+    end
+    clear natomxcheck natomycheck
+    mx_init=mmxstart;
+    my_init=mmystart;
+    mz_init=mmzstart;
+end

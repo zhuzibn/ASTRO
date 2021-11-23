@@ -6,25 +6,13 @@ constantfile;
 clear gam
 rk4=1;%1:rk4,0:heun Method,2:4th predictor-corrector
 bc=1;%0.periodic condition;1,not periodic
-dipolemode=0;
-%0:not calcualte dipole, 1: direct calculation using CPU
-%2:direct calculation using CPU, 3:calculation using macrocell
-if dipolemode==3
-    natom_mc_W=2;%number of atoms in the macrocell along x direction
-    natom_mc_L=2;%number of atoms in the macrocell along y direction
-end
-DMIenable=0;
-dwcalc=0;%1:simulate dw motion 0: no domain wall
+DMIenable=1;
+dwcalc=1;%1:simulate dw motion 0: no domain wall
 thermalenable=0;%enable thermal field?
-enablefixedge=0;%fix the atoms at the edge
-if enablefixedge
-    fixededgeL=3;%No of atoms fixed along Length
-    mxleft=0;
-    myleft=0;
-    mzleft=1;
-    mxright=0;
-    myright=0;
-    mzright=-1;  
+%% load magnetization
+loadstartm=1;%1:load magnetization file; 0:direct calculate
+if loadstartm
+startmname='startm_20x250.mat';
 end
 %% use fixed atom distribution
 load_fixed_atom_distrib=1;%load fixed atom distribution
@@ -40,10 +28,30 @@ else
    display('use random atom distribution')
    rng('shuffle');
 end
+%% enable dipole
+dipolemode=0;
+%0:not calcualte dipole, 1: direct calculation using CPU
+%2:direct calculation using CPU, 3:calculation using macrocell
+if dipolemode==3
+    natom_mc_W=2;%number of atoms in the macrocell along x direction
+    natom_mc_L=2;%number of atoms in the macrocell along y direction
+end
+%% fix atoms at the edge
+enablefixedge=0;%fix the atoms at the edge
+if enablefixedge
+    fixededgeL=3;%No of atoms fixed along Length
+    mxleft=0;
+    myleft=0;
+    mzleft=1;
+    mxright=0;
+    myright=0;
+    mzright=-1;  
+end
+
 %% optional control
 %gpuDevice(1)%select GPU device
 %% system generation
-natomW=10;natomL=15;%no. of cells along vertical and horizontal direction, 
+natomW=20;natomL=250;%no. of cells along vertical and horizontal direction, 
 %note this is different to the x,y,z in h_ex or hdmi etc
 compositionn=0.1;%composition percentage (X) of RE element, e.g. GdX(FeCo)1-X
 d=0.4e-9;%[m],lattice constant
@@ -73,7 +81,7 @@ jcSOT=1e9;%[A/m2]
 jcSTT=1.5e9;%[A/m2]
 Hext=[0,0,0e-3];% corresponding to runtime2
 %% SOT parameters
-SOT_DLT=1;%1(0),enable(disable) SOT damping torque
+SOT_DLT=0;%1(0),enable(disable) SOT damping torque
 SOT_FLT=0;%1(0),enable(disable) SOT field-like torque
 psjSHE=[0,1,0];%spin flux polarization
 psjSHEx=psjSHE(1);
@@ -85,10 +93,10 @@ if SOT_FLT
 else
     chi=0;
 end
-BDSOTRE=hbar/2*thetaSH*jcSOT/(msRE*tz);%[T]
-BDSOTTM=hbar/2*thetaSH*jcSOT/(msTM*tz);
+BDSOTRE=SOT_DLT*hbar/2*thetaSH*jcSOT/(msRE*tz);%[T]
+BDSOTTM=SOT_DLT*hbar/2*thetaSH*jcSOT/(msTM*tz);
 %% STT parameters
-STT_DLT=1;%1(0),enable(disable) SOT damping torque
+STT_DLT=0;%1(0),enable(disable) SOT damping torque
 STT_FLT=0;%1(0),enable(disable) SOT field-like torque
 psjSTT=[0,0,1];%spin flux polarization
 psjSTTx=psjSTT(1);
@@ -100,8 +108,8 @@ if STT_FLT
 else
     chiSTT=0;
 end
-BDSTTRE=hbar/2*etaSTT*jcSTT/(msRE*tz);%[T]
-BDSTTTM=hbar/2*etaSTT*jcSTT/(msTM*tz);
+BDSTTRE=STT_DLT*hbar/2*etaSTT*jcSTT/(msRE*tz);%[T]
+BDSTTTM=STT_DLT*hbar/2*etaSTT*jcSTT/(msTM*tz);
 %% other parameters
 T=100;%[K]
 %% time control
