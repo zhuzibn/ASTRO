@@ -10,7 +10,7 @@ DMIenable=1;
 dwcalc=1;%1:simulate dw motion 0: no domain wall
 thermalenable=0;%enable thermal field?
 %% load magnetization
-loadstartm=1;%1:load magnetization file; 0:direct calculate
+loadstartm=0;%1:load magnetization file; 0:direct calculate
 if loadstartm
 startmname='startm_20x250.mat';
 end
@@ -51,7 +51,7 @@ end
 %% optional control
 %gpuDevice(1)%select GPU device
 %% system generation
-natomW=20;natomL=250;%no. of cells along vertical and horizontal direction, 
+natomW=4;natomL=5;%no. of cells along vertical and horizontal direction, 
 %note this is different to the x,y,z in h_ex or hdmi etc
 compositionn=0.1;%composition percentage (X) of RE element, e.g. GdX(FeCo)1-X
 d=0.4e-9;%[m],lattice constant

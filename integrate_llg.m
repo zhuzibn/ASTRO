@@ -114,34 +114,34 @@ for ctL=1:natomL
                     AsimpreviousL(ctW,ctL)=Jfefe;
                 end
             end
-            
+
             if ctW==natomW
                 if bc
-                    AsimnextW(ctW,ctL)=0;
+                    AsimpreviousW(ctW,ctL)=0;
                 else
-                    AsimnextW(ctW,ctL)=Jfefe*(atomtype_(ctW,ctL)==atomtype_(1,ctL))+...
+                    AsimpreviousW(ctW,ctL)=Jfefe*(atomtype_(ctW,ctL)==atomtype_(1,ctL))+...
                         Jfegd*(~atomtype_(ctW,ctL)==atomtype_(1,ctL));
                 end
             else
                 if atomtype_(ctW+1,ctL)==1%the other atom is RE
-                    AsimnextW(ctW,ctL)=Jfegd;
+                    AsimpreviousW(ctW,ctL)=Jfegd;
                 else%the other atom is TM
-                    AsimnextW(ctW,ctL)=Jfefe;
+                    AsimpreviousW(ctW,ctL)=Jfefe;
                 end
             end
             
             if ctW==1
                 if bc
-                    AsimpreviousW(ctW,ctL)=0;
+                    AsimnextW(ctW,ctL)=0;
                 else
-                    AsimpreviousW(ctW,ctL)=Jfefe*(atomtype_(ctW,ctL)==atomtype_(natomW,ctL))+...
+                    AsimnextW(ctW,ctL)=Jfefe*(atomtype_(ctW,ctL)==atomtype_(natomW,ctL))+...
                         Jfegd*(~atomtype_(ctW,ctL)==atomtype_(natomW,ctL));
                 end
             else
                 if atomtype_(ctW-1,ctL)==1%the other atom is RE
-                    AsimpreviousW(ctW,ctL)=Jfegd;
+                    AsimnextW(ctW,ctL)=Jfegd;
                 else%the other atom is TM
-                    AsimpreviousW(ctW,ctL)=Jfefe;
+                    AsimnextW(ctW,ctL)=Jfefe;
                 end
             end
         end
@@ -235,17 +235,18 @@ while ~(ct3>ct3run)
         mmypreviousL=circshift(mmytmp,[0,1]);
         mmzpreviousL=circshift(mmztmp,[0,1]);
         
-        mmxnextW=circshift(mmxtmp,[-1,0]);%width direction
-        mmynextW=circshift(mmytmp,[-1,0]);
-        mmznextW=circshift(mmztmp,[-1,0]);
-        mmxpreviousW=circshift(mmxtmp,[1,0]);
-        mmypreviousW=circshift(mmytmp,[1,0]);
-        mmzpreviousW=circshift(mmztmp,[1,0]);
+        mmxnextW=circshift(mmxtmp,[1,0]);%width direction
+        mmynextW=circshift(mmytmp,[1,0]);
+        mmznextW=circshift(mmztmp,[1,0]);
+        mmxpreviousW=circshift(mmxtmp,[-1,0]);
+        mmypreviousW=circshift(mmytmp,[-1,0]);
+        mmzpreviousW=circshift(mmztmp,[-1,0]);
+
         if bc%not periodic condition
             mmxnextL(:,end)=0;mmynextL(:,end)=0;mmznextL(:,end)=0;
             mmxpreviousL(:,1)=0;mmypreviousL(:,1)=0;mmzpreviousL(:,1)=0;
-            mmxnextW(end,:)=0;mmynextW(end,:)=0;mmznextW(end,:)=0;
-            mmxpreviousW(1,:)=0;mmypreviousW(1,:)=0;mmzpreviousW(1,:)=0;
+            mmxnextW(1,:)=0;mmynextW(1,:)=0;mmznextW(1,:)=0;
+            mmxpreviousW(end,:)=0;mmypreviousW(end,:)=0;mmzpreviousW(end,:)=0;
         else%periodic condition
             %do nothing
         end
@@ -262,6 +263,9 @@ while ~(ct3>ct3run)
         hani_z=2*Ksim./muigpu.*mmztmp;%[T]
         % Renjie pointed out the error in calculating hdmi in the previous
         % version of code, which has been corrected below.
+        % 2023.09, During the plot of skyrmion, Zhang Xue find the top-down 
+        % direction is wrong. It is induced by the wrong nextW direction,
+        % which has been corrected.
         hdmi_x=Dsim./muigpu.*(-mmznextL+mmzpreviousL);%[T]
         hdmi_y=Dsim./muigpu.*(-mmznextW+mmzpreviousW);
         hdmi_z=Dsim./muigpu.*(mmxnextL-mmxpreviousL+mmynextW-mmypreviousW);
