@@ -56,31 +56,31 @@ for ctL=1:natomL
             
             if ctW==natomW
                 if bc
-                    AsimnextW(ctW,ctL)=0;
+                    AsimpreviousW(ctW,ctL)=0;
                 else
-                    AsimnextW(ctW,ctL)=Jgdgd*(atomtype_(ctW,ctL)==atomtype_(1,ctL))+...
+                    AsimpreviousW(ctW,ctL)=Jgdgd*(atomtype_(ctW,ctL)==atomtype_(1,ctL))+...
                         Jfegd*(~atomtype_(ctW,ctL)==atomtype_(1,ctL));
                 end
             else
                 if atomtype_(ctW+1,ctL)==1%the other atom is RE
-                    AsimnextW(ctW,ctL)=Jgdgd;
+                    AsimpreviousW(ctW,ctL)=Jgdgd;
                 else%the other atom is TM
-                    AsimnextW(ctW,ctL)=Jfegd;
+                    AsimpreviousW(ctW,ctL)=Jfegd;
                 end
             end
             
             if ctW==1
                 if bc
-                    AsimpreviousW(ctW,ctL)=0;
+                    AsimnextW(ctW,ctL)=0;
                 else
-                    AsimpreviousW(ctW,ctL)=Jgdgd*(atomtype_(ctW,ctL)==atomtype_(natomW,ctL))+...
+                    AsimnextW(ctW,ctL)=Jgdgd*(atomtype_(ctW,ctL)==atomtype_(natomW,ctL))+...
                         Jfegd*(~atomtype_(ctW,ctL)==atomtype_(natomW,ctL));
                 end
             else
                 if atomtype_(ctW-1,ctL)==1%the other atom is RE
-                    AsimpreviousW(ctW,ctL)=Jgdgd;
+                    AsimnextW(ctW,ctL)=Jgdgd;
                 else%the other atom is TM
-                    AsimpreviousW(ctW,ctL)=Jfegd;
+                    AsimnextW(ctW,ctL)=Jfegd;
                 end
             end
             
