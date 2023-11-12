@@ -136,23 +136,15 @@ if (SOT_DLT || SOT_FLT) && ~(rk4==1)
     error('only rk4 is implemented for spin torque driven')
 end
 
-if(0)%view initial state
-    gridW = 1:natomW;
-    gridL = 1:natomL;
-    [gridplotx,gridploty] = meshgrid(gridL,gridW);
-    gridz=zeros(natomW,natomL);
-    figure;hold on%initial magnetization
-    for ctL=1:natomL
-        for ctW=1:natomW
-            if atomtype_(ctW,ctL)==0%TM
-                quiver3(gridplotx(natomW-ctW+1,ctL),gridploty(natomW-ctW+1,ctL),gridz(ctW,ctL),...
-                    mx_init(ctW,ctL),my_init(ctW,ctL),mz_init(ctW,ctL),'r');
-            else
-                quiver3(gridplotx(natomW-ctW+1,ctL),gridploty(natomW-ctW+1,ctL),gridz(ctW,ctL),...
-                    mx_init(ctW,ctL),my_init(ctW,ctL),mz_init(ctW,ctL),'b');
-            end
-        end
-    end
+if(1)%view initial state
+    addpath('C:\Users\zzf-m\OneDrive\code_softwares\general\gitcontrol\3D_vector_plot')
+    mmx_show=zeros(natomW,natomL,2);%initial magnetization
+    mmy_show=zeros(natomW,natomL,2);
+    mmz_show=zeros(natomW,natomL,2);
+    mmx_show(:,:,1)=mx_init;
+    mmy_show(:,:,1)=my_init;
+    mmz_show(:,:,1)=mz_init;
+    threedplott_main;
 end
 %% dynamic calc
 integrate_llg(); toc
