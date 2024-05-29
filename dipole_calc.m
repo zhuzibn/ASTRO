@@ -76,7 +76,7 @@ switch dipolemode
         % cpu calculation with macrocell method, refer to 2014-Atomistic spin model simulations of-JPCM-R F L Evans-print-1-14
         mui_sx=muigpu.*mmxtmp;
         mui_sy=muigpu.*mmytmp;
-        mui_sz=muigpu.*mmytmp;
+        mui_sz=muigpu.*mmztmp;
         
         mmcx_=zeros(nW_group,nL_group);
         mmcy_=zeros(nW_group,nL_group);
