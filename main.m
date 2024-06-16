@@ -15,7 +15,7 @@ if loadstartm
 startmname='startm_20x250.mat';
 end
 %% use fixed atom distribution
-load_fixed_atom_distrib=1;%load fixed atom distribution
+load_fixed_atom_distrib=0;%load fixed atom distribution
 save_fixed_atom_distrib=0;%save fixed atom distribution
 if save_fixed_atom_distrib && load_fixed_atom_distrib
    error('only one of load_fixed_atom_distrib or save_fixed_atom_distrib can be enabled'); 
@@ -51,7 +51,7 @@ end
 %% optional control
 %gpuDevice(1)%select GPU device
 %% system generation
-natomW=4;natomL=5;%no. of cells along vertical and horizontal direction, 
+natomW=20;natomL=30;%no. of cells along vertical and horizontal direction, 
 %note this is different to the x,y,z in h_ex or hdmi etc
 compositionn=0.1;%composition percentage (X) of RE element, e.g. GdX(FeCo)1-X
 d=0.4e-9;%[m],lattice constant
@@ -65,6 +65,7 @@ Ksim=0.4e-3*ele;
 Jgdgd=-1.26e-21;Jfefe=-2.835e-21;Jfegd=1.09e-21;%[J/link], 2011-nature-I. Radu
 gTM=2.2;gRE=2;%g-factor
 gamTM=gTM*mub/(hbar*ele);%1/(s.T)refer to "PRL 97, 217202 (2006), Jiang Xin"
+%gamTM=1.760859644e11;%rad/(s.T);
 gamRE=gRE*mub/(hbar*ele);
 tz=d;%[m],thickness of FiM
 musRE=7.63*mub;musTM=2.217*mub;%[J/T]magnetic moment [1]
@@ -81,7 +82,7 @@ jcSOT=1e9;%[A/m2]
 jcSTT=1.5e9;%[A/m2]
 Hext=[0,0,0e-3];% corresponding to runtime2
 %% SOT parameters
-SOT_DLT=0;%1(0),enable(disable) SOT damping torque
+SOT_DLT=1;%1(0),enable(disable) SOT damping torque
 SOT_FLT=0;%1(0),enable(disable) SOT field-like torque
 psjSHE=[0,1,0];%spin flux polarization
 psjSHEx=psjSHE(1);
@@ -114,7 +115,7 @@ BDSTTTM=STT_DLT*hbar/2*etaSTT*jcSTT/(msTM*tz);
 T=100;%[K]
 %% time control
 gpusave=1e-12;%how often saving gpu data
-gpurun_number=3;
+gpurun_number=2;
 tstep=2e-16;
 savetstep=100;%this is used to reduce data size
 
@@ -136,7 +137,7 @@ if (SOT_DLT || SOT_FLT) && ~(rk4==1)
     error('only rk4 is implemented for spin torque driven')
 end
 
-if(1)%view initial state
+if(0)%view initial state
     addpath('C:\Users\zzf-m\OneDrive\code_softwares\general\gitcontrol\3D_vector_plot')
     mmx_show=zeros(natomW,natomL,2);%initial magnetization
     mmy_show=zeros(natomW,natomL,2);
@@ -167,7 +168,8 @@ end
 %% dynamic calc
 integrate_llg(); toc
 %% save data
-save('finalnew.mat')
+save('final.mat')
+
 
 
 
