@@ -150,7 +150,7 @@ end
 gamatom=scalgpu*(1+alp^2);
 clear ctW ctL
 BFSOT=chi*BDSOT;
-BFSTT=chi*BDSTT;
+BFSTT=chiSTT*BDSTT;
 
 if dipolemode==3 %group atoms into macrocells
     if ~mod(natomW,natom_mc_W)
