@@ -1,8 +1,8 @@
 # ASTRO Baseline Metadata
 
-- Benchmark date/time: `2026-06-09 11:42:00 +0800`
-- Git commit: `a2359e17b0e51e34e597a81d1de1a8a807fcda21`
-- Git branch: `baseline-benchmark-plan`
+- Benchmark date/time: `2026-06-09 17:44:26 +0800`
+- Git commit: `9d00a6d735c72a13f23e4477ce09d550e90f1118`
+- Git branch: `codex-b8e2-establish-current-baseline`
 - MATLAB version: `24.2.0.2740171 (R2024b) Update 1`
 - GPU available: `1`
 - GPU: `NVIDIA GeForce RTX 3060 Laptop GPU`
@@ -10,19 +10,19 @@
 - GPU driver: `581.95`
 - CUDA toolkit version reported by MATLAB: `12.2000`
 - Operating system: `Microsoft Windows 11 家庭版 中文版`
-- Benchmark mode: `quick`
-- Exact MATLAB expression: `run('benchmark/run_baseline_benchmark.m')`
-- Lattice size: `3 x 5` (W x L)
+- Benchmark mode: `current`
+- Exact MATLAB expression: `benchmark_mode='current'; run('benchmark/run_baseline_benchmark.m')`
+- Lattice size: `20 x 30` (W x L)
 - Lattice constant: `0.4e-9 m`
 - Time settings: `tstep=2e-16 s`, `gpusave=1e-12 s`, `gpurun_number=2`, `runtime=2e-12 s`, `savetstep=100`
 - Composition: `compositionn=0.1` (10% RE/Gd)
-- Fixed atom distribution: `C:\Users\zzf-m\OneDrive\code_softwares\atomistic_model\2D\atomistic\atomistic_v2\benchmark\baseline\input\baseline_atomtype_quick.mat`
+- Fixed atom distribution: `C:\Users\zzf-m\OneDrive\code_softwares\atomistic_model\2D\atomistic\atomistic_v2\benchmark\baseline\input\baseline_atomtype.mat`
 - Enabled: exchange, anisotropy, DMI, SOT damping-like torque
 - Disabled/zero: thermal, dipole, SOT field-like, both STT terms, fixed edges, external field
 - Result file: `C:\Users\zzf-m\OneDrive\code_softwares\atomistic_model\2D\atomistic\atomistic_v2\benchmark\baseline\output\baseline_result.mat`
 - Figure directory: `C:\Users\zzf-m\OneDrive\code_softwares\atomistic_model\2D\atomistic\atomistic_v2\benchmark\baseline\figures`
 - Benchmark actually ran: `1`
-- Solver runtime: `62.965540 seconds`
+- Solver runtime: `149.875465 seconds`
 - Warnings: none recorded
 - Missing quantities: energy is not computed by current ASTRO output.
 
