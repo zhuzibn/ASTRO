@@ -29,6 +29,17 @@ matlab -batch "benchmark_mode='current'; run('benchmark/run_baseline_benchmark.m
 Both modes retain the audited physics and time settings. Quick mode changes
 only `natomW` and `natomL`.
 
+To run without overwriting the accepted baseline outputs, set
+`benchmark_output_root` to a candidate directory:
+
+```bash
+matlab -batch "benchmark_output_root=fullfile(tempdir,'astro-step1-quick'); run('benchmark/run_baseline_benchmark.m')"
+```
+
+Candidate runs still read the fixed atom distributions from
+`benchmark/baseline/input/`, but write generated artifacts under the selected
+directory.
+
 ## Outputs
 
 - `benchmark/baseline/input/baseline_atomtype.mat`: fixed current-size
@@ -46,6 +57,16 @@ only `natomW` and `natomL`.
 - `benchmark/baseline/figures/spin_norm_histogram.png`
 
 The runner does not depend on or overwrite root-level `final.mat`.
+
+When `benchmark_output_root` is set, the generated outputs are:
+
+- `<benchmark_output_root>/output/benchmark_result.mat`
+- `<benchmark_output_root>/benchmark_metadata.md`
+- `<benchmark_output_root>/figures/atomtype_matrix.png`
+- `<benchmark_output_root>/figures/initial_mz.png`
+- `<benchmark_output_root>/figures/final_mz.png`
+- `<benchmark_output_root>/figures/average_spin_vs_time.png`
+- `<benchmark_output_root>/figures/spin_norm_histogram.png`
 
 ## Compare
 
