@@ -20,9 +20,18 @@ benchmark_script = mfilename('fullpath');
 benchmark_dir = fileparts(benchmark_script);
 repo_root = fileparts(benchmark_dir);
 input_dir = fullfile(benchmark_dir, 'baseline', 'input');
-output_dir = fullfile(benchmark_dir, 'baseline', 'output');
-figure_dir = fullfile(benchmark_dir, 'baseline', 'figures');
-metadata_file = fullfile(benchmark_dir, 'baseline', 'baseline_metadata.md');
+if exist('benchmark_output_root', 'var') && ~isempty(benchmark_output_root)
+    benchmark_output_root = char(benchmark_output_root);
+    output_dir = fullfile(benchmark_output_root, 'output');
+    figure_dir = fullfile(benchmark_output_root, 'figures');
+    metadata_file = fullfile(benchmark_output_root, 'benchmark_metadata.md');
+    output_file = fullfile(output_dir, 'benchmark_result.mat');
+else
+    output_dir = fullfile(benchmark_dir, 'baseline', 'output');
+    figure_dir = fullfile(benchmark_dir, 'baseline', 'figures');
+    metadata_file = fullfile(benchmark_dir, 'baseline', 'baseline_metadata.md');
+    output_file = fullfile(output_dir, 'baseline_result.mat');
+end
 addpath(repo_root);
 
 if ~exist(input_dir, 'dir'), mkdir(input_dir); end
@@ -41,6 +50,11 @@ else
     exact_command = sprintf( ...
         'benchmark_mode=''%s''; run(''benchmark/run_baseline_benchmark.m'')', ...
         benchmark_mode);
+end
+if exist('benchmark_output_root', 'var') && ~isempty(benchmark_output_root)
+    escaped_output_root = strrep(benchmark_output_root, '''', '''''');
+    exact_command = sprintf('benchmark_output_root=''%s''; %s', ...
+        escaped_output_root, exact_command);
 end
 
 gpu_info = struct('available', false, 'name', '', 'compute_capability', '', ...
@@ -80,7 +94,6 @@ end
 benchmark_ran = false;
 benchmark_elapsed_seconds = NaN;
 benchmark_warning = '';
-output_file = fullfile(output_dir, 'baseline_result.mat');
 benchmark_write_metadata(metadata_file, false, benchmark_elapsed_seconds, ...
     benchmark_warning, benchmark_mode, timestamp, git_commit, git_branch, ...
     matlab_version, gpu_info, operating_system, exact_command, natomW, ...
