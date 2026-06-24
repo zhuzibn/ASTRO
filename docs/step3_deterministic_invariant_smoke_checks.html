@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ASTRO Step 3 - Deterministic Invariant Smoke Checks</title>
+<style>
+  :root {
+    --bg: #f7f5ef;
+    --panel: #ffffff;
+    --ink: #1f2328;
+    --muted: #656d76;
+    --line: #d8d0c0;
+    --code-bg: #f6f8fa;
+    --green: #e6ffed;
+    --red: #ffeef0;
+    --green-text: #1f7a39;
+    --red-text: #a33a35;
+    --accent: #7b8f61;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --serif: ui-serif, Georgia, "Times New Roman", serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.55;
+    padding: 36px 18px 56px;
+  }
+
+  main {
+    max-width: 940px;
+    margin: 0 auto;
+  }
+
+  header, section {
+    background: var(--panel);
+    border: 1.5px solid var(--line);
+    border-radius: 12px;
+    margin-bottom: 18px;
+    padding: 22px 26px;
+  }
+
+  .eyebrow {
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 12px;
+    margin-bottom: 8px;
+  }
+
+  h1, h2, h3 {
+    color: var(--ink);
+    font-family: var(--serif);
+    font-weight: 500;
+    line-height: 1.2;
+    margin: 0 0 12px;
+  }
+
+  h1 { font-size: 30px; }
+  h2 { font-size: 21px; }
+  h3 { font-size: 17px; margin-top: 18px; }
+
+  p { margin: 0 0 10px; }
+
+  ul {
+    margin: 8px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  li {
+    position: relative;
+    margin: 8px 0;
+    padding-left: 22px;
+  }
+
+  li::before {
+    content: "";
+    position: absolute;
+    left: 4px;
+    top: 10px;
+    width: 6px;
+    height: 6px;
+    border-radius: 2px;
+    background: var(--accent);
+  }
+
+  code {
+    font-family: var(--mono);
+    font-size: 13px;
+    background: var(--code-bg);
+    border-radius: 4px;
+    padding: 1px 5px;
+  }
+
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 16px;
+  }
+
+  .chip {
+    border: 1.5px solid var(--line);
+    border-radius: 8px;
+    background: #f1eee5;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 6px 9px;
+  }
+
+  .callout {
+    border-left: 4px solid var(--accent);
+    background: #f0f4e8;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin: 12px 0;
+  }
+
+  pre, code {
+    margin: 0;
+    line-height: 1.25;
+  }
+
+  .diff-block {
+    margin: 8px 0 16px;
+    padding: 12px;
+    overflow-x: auto;
+    font-family: var(--mono);
+    background: var(--code-bg);
+    border: 1px solid #d0d7de;
+    border-radius: 8px;
+    font-size: 0;
+    line-height: 0;
+    white-space: normal;
+  }
+
+  .diff-line {
+    display: block;
+    margin: 0;
+    padding: 2px 8px;
+    font-size: 13px;
+    line-height: 1.25;
+    white-space: pre;
+    color: var(--ink);
+  }
+
+  .diff-line.add {
+    background: var(--green);
+    color: var(--green-text);
+  }
+
+  .diff-line.del {
+    background: var(--red);
+    color: var(--red-text);
+  }
+
+  .diff-line.context {
+    background: var(--code-bg);
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 12px;
+    margin-top: 12px;
+  }
+
+  .card {
+    border: 1.5px solid var(--line);
+    border-radius: 10px;
+    padding: 13px 14px;
+    background: #fffdfa;
+  }
+
+  .card strong {
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .small {
+    color: var(--muted);
+    font-size: 13px;
+  }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="eyebrow">ASTRO Phase 3 · explanatory report</div>
+    <h1>Step 3 - Deterministic Invariant Smoke Checks</h1>
+    <p>
+      Question: Explain <strong>Step 3 - Deterministic Invariant Smoke Checks</strong>.
+    </p>
+    <div class="meta">
+      <span class="chip">scope: explanation only</span>
+      <span class="chip">output: single-file HTML</span>
+      <span class="chip">source code: unchanged</span>
+    </div>
+  </header>
+
+  <section>
+    <h2>1. Summary</h2>
+    <p>
+      Step 3 means adding a small, repeatable MATLAB check that verifies ASTRO's
+      basic output invariants without requiring a full manual inspection.
+    </p>
+    <p>
+      The goal is not to prove the physics is correct. The goal is to catch
+      structural regressions quickly after future code changes.
+    </p>
+    <div class="callout">
+      Step 2 changed the saved-time contract and updated the accepted current-size
+      baseline to <code>20 x 30 x 101</code>. Step 3 turns that contract into an
+      automated guard.
+    </div>
+  </section>
+
+  <section>
+    <h2>2. Checks to include</h2>
+    <ul>
+      <li>The deterministic fixed atom distribution loads correctly.</li>
+      <li>The output arrays have matching shapes.</li>
+      <li>The first saved time is <code>0</code>.</li>
+      <li>The last saved time equals <code>runtime</code>.</li>
+      <li>Saved times are strictly increasing.</li>
+      <li>Spin values are finite.</li>
+      <li>Spin normalization remains close to <code>1</code>.</li>
+      <li>The atom counts match the expected deterministic distribution.</li>
+      <li>The first saved state matches the initialized spin state.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>3. Invariant examples</h2>
+    <h3>Shape alignment</h3>
+    <pre class="diff-block"><code><span class="diff-line add">+numel(t) == size(mmx,3) == size(mmy,3) == size(mmz,3)</span></code></pre>
+
+    <h3>Finite spin values</h3>
+    <pre class="diff-block"><code><span class="diff-line add">+all(isfinite(mmx(:)))</span><span class="diff-line add">+all(isfinite(mmy(:)))</span><span class="diff-line add">+all(isfinite(mmz(:)))</span></code></pre>
+
+    <h3>Spin normalization</h3>
+    <pre class="diff-block"><code><span class="diff-line add">+sqrt(mmx.^2 + mmy.^2 + mmz.^2) ≈ 1</span></code></pre>
+  </section>
+
+  <section>
+    <h2>4. Why it matters now</h2>
+    <p>
+      The new saved-time contract should not regress. Step 3 prevents future edits
+      from accidentally reintroducing missing <code>t=0</code>, missing
+      <code>runtime</code>, mismatched <code>t/mmx</code> lengths, or duplicated
+      chunk-boundary states.
+    </p>
+  </section>
+
+  <section>
+    <h2>5. Likely implementation</h2>
+    <p>One likely implementation is a dedicated smoke-test entry point:</p>
+    <pre class="diff-block"><code><span class="diff-line add">+matlab -batch "run('tests/run_smoke_tests.m')"</span></code></pre>
+    <p>Or, if keeping the check under <code>benchmark/</code>:</p>
+    <pre class="diff-block"><code><span class="diff-line add">+matlab -batch "run('benchmark/run_smoke_tests.m')"</span></code></pre>
+    <p>
+      The MATLAB script should use <code>assert(...)</code> so it exits nonzero
+      when an invariant fails.
+    </p>
+  </section>
+
+  <section>
+    <h2>6. Recommended workflow</h2>
+    <pre class="diff-block"><code><span class="diff-line context">git switch master</span><span class="diff-line context">git switch -c codex-d1a3-add-invariant-smoke-tests</span></code></pre>
+    <p>
+      Implement the smoke test as a separate commit from the saved-time contract
+      change and the current-size baseline update.
+    </p>
+  </section>
+</main>
+</body>
+</html>
