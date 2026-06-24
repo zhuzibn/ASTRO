@@ -1,8 +1,8 @@
 # ASTRO Baseline Metadata
 
-- Benchmark date/time: `2026-06-09 17:44:26 +0800`
-- Git commit: `9d00a6d735c72a13f23e4477ce09d550e90f1118`
-- Git branch: `codex-b8e2-establish-current-baseline`
+- Benchmark date/time: `2026-06-24 16:58:03 +0800`
+- Git commit: `638325cfc905ee57ce98f17ae57e6d43cf44a9f1`
+- Git branch: `master`
 - MATLAB version: `24.2.0.2740171 (R2024b) Update 1`
 - GPU available: `1`
 - GPU: `NVIDIA GeForce RTX 3060 Laptop GPU`
@@ -22,7 +22,7 @@
 - Result file: `C:\Users\zzf-m\OneDrive\code_softwares\atomistic_model\2D\atomistic\atomistic_v2\benchmark\baseline\output\baseline_result.mat`
 - Figure directory: `C:\Users\zzf-m\OneDrive\code_softwares\atomistic_model\2D\atomistic\atomistic_v2\benchmark\baseline\figures`
 - Benchmark actually ran: `1`
-- Solver runtime: `149.875465 seconds`
+- Solver runtime: `138.972184 seconds`
 - Warnings: none recorded
 - Missing quantities: energy is not computed by current ASTRO output.
 
