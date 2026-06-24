@@ -190,11 +190,11 @@ try
     gpusteps = round(gpusave/tstep);
     runtime = gpurun_number*gpusave;
     totstep = round(runtime/tstep);
-    t = linspace(tstep, runtime, totstep);
+    t = (0:savetstep:totstep)*tstep;
     if mod(gpusteps, savetstep) ~= 0
         error('gpusteps must be an integer multiple of savetstep.');
     end
-    final_m_savestep = numel(1:savetstep:gpusteps);
+    final_m_savestep = numel(t);
     if (SOT_DLT || SOT_FLT) && rk4 ~= 1
         error('Only RK4 is implemented for spin-torque-driven runs.');
     end

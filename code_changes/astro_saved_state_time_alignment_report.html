@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ASTRO Saved-State/Time Alignment Change Report</title>
+  <style>
+    :root {
+      --bg: #f6f8fa;
+      --panel: #ffffff;
+      --text: #1f2328;
+      --muted: #59636e;
+      --border: #d0d7de;
+      --code-bg: #f6f8fa;
+      --add-bg: #dafbe1;
+      --add-border: #4ac26b;
+      --del-bg: #ffebe9;
+      --del-border: #ff8182;
+      --accent: #0969da;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      line-height: 1.5;
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 32px 20px 48px;
+    }
+
+    header {
+      margin-bottom: 24px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+      line-height: 1.2;
+    }
+
+    h2 {
+      margin: 0 0 14px;
+      font-size: 21px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 8px;
+    }
+
+    h3 {
+      margin: 22px 0 10px;
+      font-size: 17px;
+    }
+
+    p {
+      margin: 0 0 12px;
+    }
+
+    code {
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 0.94em;
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1px 4px;
+    }
+
+    section {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      margin: 16px 0;
+    }
+
+    ul {
+      margin: 8px 0 0 22px;
+      padding: 0;
+    }
+
+    li {
+      margin: 5px 0;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .file-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .file-card {
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--accent);
+      border-radius: 6px;
+      padding: 10px 12px;
+      background: #fbfcfd;
+    }
+
+    .file-card strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .file-card span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .diff {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--code-bg);
+      margin: 10px 0 18px;
+    }
+
+    .diff pre {
+      margin: 0;
+      padding: 12px;
+      min-width: max-content;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 0;
+      line-height: 0;
+      white-space: normal;
+    }
+
+    .line {
+      display: block;
+      padding: 2px 8px;
+      border-left: 4px solid transparent;
+      font-size: 13px;
+      line-height: 1.25;
+      white-space: pre;
+    }
+
+    .line.add {
+      background: var(--add-bg);
+      border-left-color: var(--add-border);
+    }
+
+    .line.del {
+      background: var(--del-bg);
+      border-left-color: var(--del-border);
+    }
+
+    .note {
+      border-left: 4px solid var(--accent);
+      padding: 10px 12px;
+      background: #ddf4ff;
+      border-radius: 4px;
+      color: #24292f;
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 6px;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>ASTRO Saved-State/Time Alignment Change Report</h1>
+      <p class="subtitle">Current branch changes for aligning saved spin states with saved timestamps.</p>
+      <p class="meta">Scope: report only. No MATLAB source code is modified by this document.</p>
+      <p class="meta">Report file: <code>code_changes/astro_saved_state_time_alignment_report.html</code></p>
+    </header>
+
+    <section>
+      <h2>1. Summary</h2>
+      <p>
+        The change defines saved spin states and saved times as the same physical samples.
+        The trajectory now includes the initial state at <code>t=0</code>, includes the
+        final state at <code>runtime</code>, and avoids duplicate states at GPU chunk boundaries.
+      </p>
+      <p>
+        The implementation is limited to saved-time construction and RK4 trajectory assembly.
+        It does not change field formulas, torque formulas, boundary semantics,
+        normalization, or atom-distribution behavior.
+      </p>
+    </section>
+
+    <section>
+      <h2>2. Files Changed</h2>
+      <div class="file-list">
+        <div class="file-card">
+          <strong>main.m</strong>
+          <span>Production saved-time vector and saved-count calculation.</span>
+        </div>
+        <div class="file-card">
+          <strong>integrate_llg.m</strong>
+          <span>RK4 trajectory allocation, per-chunk save indexing, and count guard.</span>
+        </div>
+        <div class="file-card">
+          <strong>benchmark/run_baseline_benchmark.m</strong>
+          <span>Benchmark saved-time vector and saved-count calculation.</span>
+        </div>
+        <div class="file-card">
+          <strong>CHANGELOG.md</strong>
+          <span>Source-code change entry for the saved-state/time contract.</span>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>3. Per-File Changes</h2>
+
+      <h3>main.m</h3>
+      <p>Build the saved-time vector directly from saved-step spacing, including <code>t=0</code>.</p>
+      <div class="diff"><pre><span class="line">gpusteps=round(gpusave/tstep);</span>
+<span class="line">runtime=gpurun_number*gpusave;%second run for dw motion</span>
+<span class="line">totstep=round(runtime/tstep);</span>
+<span class="line del">-t=linspace(tstep,runtime,totstep);%This need to be optimized</span>
+<span class="line add">+t=(0:savetstep:totstep)*tstep;</span></pre></div>
+
+      <p>Derive the saved trajectory depth from the saved-time vector.</p>
+      <div class="diff"><pre><span class="line del">-tmp1=ones(1,gpusteps);</span>
+<span class="line del">-tmp2=tmp1(1:savetstep:end);</span>
+<span class="line del">-final_m_savestep=size(tmp2,2);</span>
+<span class="line del">-clear tmp1 tmp2</span>
+<span class="line add">+final_m_savestep=numel(t);</span></pre></div>
+
+      <h3>benchmark/run_baseline_benchmark.m</h3>
+      <p>Keep the benchmark output schema aligned with production saved times.</p>
+      <div class="diff"><pre><span class="line">gpusteps = round(gpusave/tstep);</span>
+<span class="line">runtime = gpurun_number*gpusave;</span>
+<span class="line">totstep = round(runtime/tstep);</span>
+<span class="line del">-t = linspace(tstep, runtime, totstep);</span>
+<span class="line add">+t = (0:savetstep:totstep)*tstep;</span>
+<span class="line">if mod(gpusteps, savetstep) ~= 0</span>
+<span class="line">    error('gpusteps must be an integer multiple of savetstep.');</span>
+<span class="line">end</span>
+<span class="line del">-final_m_savestep = numel(1:savetstep:gpusteps);</span>
+<span class="line add">+final_m_savestep = numel(t);</span></pre></div>
+
+      <h3>integrate_llg.m</h3>
+      <p>Allocate final output arrays to exactly match <code>numel(t)</code>.</p>
+      <div class="diff"><pre><span class="line del">-mmx_=zeros(natomW,natomL,gpurun_number*final_m_savestep);</span>
+<span class="line del">-mmy_=zeros(natomW,natomL,gpurun_number*final_m_savestep);</span>
+<span class="line del">-mmz_=zeros(natomW,natomL,gpurun_number*final_m_savestep);</span>
+<span class="line add">+mmx_=zeros(natomW,natomL,final_m_savestep);</span>
+<span class="line add">+mmy_=zeros(natomW,natomL,final_m_savestep);</span>
+<span class="line add">+mmz_=zeros(natomW,natomL,final_m_savestep);</span></pre></div>
+
+      <p>Track the total number of saved states across all chunks.</p>
+      <div class="diff"><pre><span class="line">ct3run=round((runtime)/gpusave);</span>
+<span class="line">ct3=1;</span>
+<span class="line add">+ctsave=0;</span>
+<span class="line">while ~(ct3&gt;ct3run)</span></pre></div>
+
+      <p>Store one extra local state per chunk so the chunk endpoint can be retained.</p>
+      <div class="diff"><pre><span class="line del">-mmx=zeros(natomW,natomL,gpusteps,'gpuArray');</span>
+<span class="line del">-mmy=zeros(natomW,natomL,gpusteps,'gpuArray');</span>
+<span class="line del">-mmz=zeros(natomW,natomL,gpusteps,'gpuArray');</span>
+<span class="line add">+mmx=zeros(natomW,natomL,gpusteps+1,'gpuArray');</span>
+<span class="line add">+mmy=zeros(natomW,natomL,gpusteps+1,'gpuArray');</span>
+<span class="line add">+mmz=zeros(natomW,natomL,gpusteps+1,'gpuArray');</span></pre></div>
+
+      <p>Run exactly <code>gpusteps</code> RK4 updates per chunk.</p>
+      <div class="diff"><pre><span class="line">ct1=1; %count 1</span>
+<span class="line del">-while ct1&lt;gpusteps</span>
+<span class="line add">+while ct1&lt;=gpusteps</span></pre></div>
+
+      <p>
+        Save the first chunk from local index 1. For later chunks, skip local index 1
+        because it is the carried state already saved as the previous chunk endpoint.
+      </p>
+      <div class="diff"><pre><span class="line del">-mmx_(:,:,(ct3-1)*final_m_savestep+1:ct3*final_m_savestep)=gather(mmx(:,:,1:savetstep:end));</span>
+<span class="line del">-mmy_(:,:,(ct3-1)*final_m_savestep+1:ct3*final_m_savestep)=gather(mmy(:,:,1:savetstep:end));</span>
+<span class="line del">-mmz_(:,:,(ct3-1)*final_m_savestep+1:ct3*final_m_savestep)=gather(mmz(:,:,1:savetstep:end));</span>
+<span class="line add">+if ct3==1</span>
+<span class="line add">+    saveindices=1:savetstep:(gpusteps+1);</span>
+<span class="line add">+else</span>
+<span class="line add">+    saveindices=(savetstep+1):savetstep:(gpusteps+1);</span>
+<span class="line add">+end</span>
+<span class="line add">+nsave=numel(saveindices);</span>
+<span class="line add">+mmx_(:,:,ctsave+1:ctsave+nsave)=gather(mmx(:,:,saveindices));</span>
+<span class="line add">+mmy_(:,:,ctsave+1:ctsave+nsave)=gather(mmy(:,:,saveindices));</span>
+<span class="line add">+mmz_(:,:,ctsave+1:ctsave+nsave)=gather(mmz(:,:,saveindices));</span>
+<span class="line add">+ctsave=ctsave+nsave;</span></pre></div>
+
+      <div class="note">
+        <p><strong>Question:</strong> Explain these lines. If <code>gpurun_number=3</code>, do they also give the correct result?</p>
+        <div class="diff"><pre><span class="line">if ct3==1</span>
+<span class="line">    saveindices=1:savetstep:(gpusteps+1);</span>
+<span class="line">else</span>
+<span class="line">    saveindices=(savetstep+1):savetstep:(gpusteps+1);</span>
+<span class="line">end</span></pre></div>
+        <p>
+          Yes. The logic still gives the correct result for <code>gpurun_number=3</code>,
+          assuming <code>gpusteps</code> is an integer multiple of <code>savetstep</code>,
+          which the code already enforces.
+        </p>
+        <p>These are local indices inside one GPU chunk. Each chunk now has <code>gpusteps+1</code> stored states:</p>
+        <div class="diff"><pre><span class="line">mmx(:,:,1)              % chunk initial state</span>
+<span class="line">mmx(:,:,2)              % after 1 tstep</span>
+<span class="line">...</span>
+<span class="line">mmx(:,:,gpusteps+1)     % after gpusteps tsteps, chunk endpoint</span></pre></div>
+        <p>For the first chunk, <code>saveindices=1:savetstep:(gpusteps+1)</code> saves the initial state and every <code>savetstep</code> update after it:</p>
+        <div class="diff"><pre><span class="line">1, 101, 201, ..., 5001</span>
+<span class="line">t = 0, 2e-14, 4e-14, ..., 1e-12</span></pre></div>
+        <p>
+          For later chunks, <code>saveindices=(savetstep+1):savetstep:(gpusteps+1)</code>
+          starts at local index 101, not 1, because local index 1 is the carried
+          state from the previous chunk endpoint. Saving it again would duplicate
+          the chunk boundary.
+        </p>
+        <p>For <code>gpurun_number=3</code>, the saved chunks are:</p>
+        <div class="diff"><pre><span class="line">chunk 1: 1, 101, 201, ..., 5001</span>
+<span class="line">         t = 0 ... 1e-12</span>
+<span class="line"></span>
+<span class="line">chunk 2: 101, 201, ..., 5001</span>
+<span class="line">         t = 1.02e-12 ... 2e-12</span>
+<span class="line"></span>
+<span class="line">chunk 3: 101, 201, ..., 5001</span>
+<span class="line">         t = 2.02e-12 ... 3e-12</span></pre></div>
+        <p>The total saved count is:</p>
+        <div class="diff"><pre><span class="line">1 + gpurun_number * (gpusteps / savetstep)</span>
+<span class="line">1 + 3 * (5000 / 100) = 151</span></pre></div>
+        <p>That matches the saved-time vector:</p>
+        <div class="diff"><pre><span class="line">t = (0:savetstep:totstep)*tstep</span>
+<span class="line">totstep = 3 * 5000 = 15000</span>
+<span class="line">numel(0:100:15000) = 151</span></pre></div>
+        <p>
+          Therefore the logic remains correct for <code>gpurun_number=3</code>:
+          the first state is <code>t=0</code>, the last state is <code>runtime</code>,
+          times are strictly increasing, and chunk boundaries are not duplicated.
+        </p>
+      </div>
+
+      <p>Add a post-loop consistency guard.</p>
+      <div class="diff"><pre><span class="line add">+if ctsave~=final_m_savestep</span>
+<span class="line add">+    error('Saved spin count does not match saved time count.')</span>
+<span class="line add">+end</span></pre></div>
+
+      <p>Clear new local bookkeeping variables and remove obsolete final time slicing.</p>
+      <div class="diff"><pre><span class="line del">-clear tmp2xn2 tmp2yn2 tmp2zn2</span>
+<span class="line add">+clear tmp2xn2 tmp2yn2 tmp2zn2 saveindices nsave ctsave</span>
+<span class="line">mmx=mmx_;</span>
+<span class="line">mmy=mmy_;</span>
+<span class="line">mmz=mmz_;</span>
+<span class="line">clear mmx_ mmy_ mmz_</span>
+<span class="line del">-t=t(1:savetstep:end);</span></pre></div>
+
+      <h3>CHANGELOG.md</h3>
+      <p>Record the source-code change under the project changelog.</p>
+      <div class="diff"><pre><span class="line add">+### 2026-06-23 - Align saved spin states with saved times</span>
+<span class="line add">+</span>
+<span class="line add">+- Updated the RK4 trajectory assembly in `integrate_llg.m` so the saved</span>
+<span class="line add">+  states include the initial state at `t=0`, include the final state at</span>
+<span class="line add">+  `runtime`, and skip duplicated carried states at chunk boundaries.</span>
+<span class="line add">+- Updated `main.m` and `benchmark/run_baseline_benchmark.m` to build the</span>
+<span class="line add">+  saved-time vector directly from `runtime`, `tstep`, and `savetstep`, making</span>
+<span class="line add">+  `numel(t)` match the saved spin trajectory depth.</span></pre></div>
+    </section>
+
+    <section>
+      <h2>4. Behavioral Contract</h2>
+      <ul>
+        <li>The first saved state is the initialized spin state at <code>t=0</code>.</li>
+        <li>The last saved state is the spin state at <code>runtime</code>.</li>
+        <li><code>numel(t)</code> equals <code>size(mmx,3)</code>, <code>size(mmy,3)</code>, and <code>size(mmz,3)</code>.</li>
+        <li>Saved times are strictly increasing.</li>
+        <li>Chunk boundary states are not duplicated.</li>
+      </ul>
+      <p class="note">
+        For <code>gpurun_number=3</code>, the saved count is
+        <code>1 + 3*(gpusteps/savetstep)</code>. With <code>gpusteps=5000</code>
+        and <code>savetstep=100</code>, this gives 151 saved states from
+        <code>0</code> through <code>3e-12</code>.
+      </p>
+    </section>
+
+    <section>
+      <h2>5. Verification Notes</h2>
+      <p>The quick candidate benchmark was run using the non-destructive output path:</p>
+      <div class="diff"><pre><span class="line">matlab -batch "benchmark_output_root=fullfile(tempdir,'astro-step2-quick'); run('benchmark/run_baseline_benchmark.m')"</span></pre></div>
+      <p>Observed result:</p>
+      <ul>
+        <li>Benchmark completed successfully in <code>64.821566 seconds</code>.</li>
+        <li>Candidate output: <code>C:\Users\zzf-m\AppData\Local\Temp\astro-step2-quick\output\benchmark_result.mat</code>.</li>
+      </ul>
+      <p>Explicit assertions passed for shape, finite values, normalization, endpoints, and monotonic timestamps:</p>
+      <ul>
+        <li><code>saved_count=101</code></li>
+        <li><code>expected_count=101</code></li>
+        <li><code>t_start=0</code></li>
+        <li><code>t_end=2e-12</code></li>
+        <li><code>max_norm_error=2.220446e-16</code></li>
+        <li><code>min_dt=2.000000e-14</code></li>
+        <li><code>max_dt=2.000000e-14</code></li>
+      </ul>
+      <p><code>git diff --check</code> passed after removing one trailing-whitespace issue. No commit was made.</p>
+    </section>
+  </main>
+</body>
+</html>

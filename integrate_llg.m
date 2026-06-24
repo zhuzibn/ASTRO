@@ -1,6 +1,6 @@
-mmx_=zeros(natomW,natomL,gpurun_number*final_m_savestep);
-mmy_=zeros(natomW,natomL,gpurun_number*final_m_savestep);
-mmz_=zeros(natomW,natomL,gpurun_number*final_m_savestep);
+mmx_=zeros(natomW,natomL,final_m_savestep);
+mmy_=zeros(natomW,natomL,final_m_savestep);
+mmz_=zeros(natomW,natomL,final_m_savestep);
 
 BDSOT=zeros(natomW,natomL,'gpuArray');
 BDSTT=zeros(natomW,natomL,'gpuArray');
@@ -209,11 +209,12 @@ end
 
 ct3run=round((runtime)/gpusave);
 ct3=1;
+ctsave=0;
 while ~(ct3>ct3run)
     
-    mmx=zeros(natomW,natomL,gpusteps,'gpuArray');
-    mmy=zeros(natomW,natomL,gpusteps,'gpuArray');
-    mmz=zeros(natomW,natomL,gpusteps,'gpuArray');
+    mmx=zeros(natomW,natomL,gpusteps+1,'gpuArray');
+    mmy=zeros(natomW,natomL,gpusteps+1,'gpuArray');
+    mmz=zeros(natomW,natomL,gpusteps+1,'gpuArray');
     
     if ~(ct3==1)
         mmx(:,:,1)=tmp2xn0;mmy(:,:,1)=tmp2yn0;mmz(:,:,1)=tmp2zn0;
@@ -222,7 +223,7 @@ while ~(ct3>ct3run)
     end
     clear tmpx tmpy tmpz
     ct1=1; %count 1
-    while ct1<gpusteps      
+    while ct1<=gpusteps
         mmxtmp0=mmx(:,:,ct1);
         mmytmp0=mmy(:,:,ct1);
         mmztmp0=mmz(:,:,ct1);
@@ -316,16 +317,26 @@ while ~(ct3>ct3run)
     tmp2xn0=mmx(:,:,end);tmp2yn0=mmy(:,:,end);tmp2zn0=mmz(:,:,end);
     tmp2xn1=mmx(:,:,end-1);tmp2yn1=mmy(:,:,end-1);tmp2zn1=mmz(:,:,end-1);
     tmp2xn2=mmx(:,:,end-2);tmp2yn2=mmy(:,:,end-2);tmp2zn2=mmz(:,:,end-2);
-    mmx_(:,:,(ct3-1)*final_m_savestep+1:ct3*final_m_savestep)=gather(mmx(:,:,1:savetstep:end));
-    mmy_(:,:,(ct3-1)*final_m_savestep+1:ct3*final_m_savestep)=gather(mmy(:,:,1:savetstep:end));
-    mmz_(:,:,(ct3-1)*final_m_savestep+1:ct3*final_m_savestep)=gather(mmz(:,:,1:savetstep:end));
+    if ct3==1
+        saveindices=1:savetstep:(gpusteps+1);
+    else
+        saveindices=(savetstep+1):savetstep:(gpusteps+1);
+    end
+    nsave=numel(saveindices);
+    mmx_(:,:,ctsave+1:ctsave+nsave)=gather(mmx(:,:,saveindices));
+    mmy_(:,:,ctsave+1:ctsave+nsave)=gather(mmy(:,:,saveindices));
+    mmz_(:,:,ctsave+1:ctsave+nsave)=gather(mmz(:,:,saveindices));
+    ctsave=ctsave+nsave;
     ct3=ct3+1;
 end
 
+if ctsave~=final_m_savestep
+    error('Saved spin count does not match saved time count.')
+end
+
 clear mmx mmy mmz tmp2xn0 tmp2yn0 tmp2zn0 tmp2xn1 tmp2yn1 tmp2zn1
-clear tmp2xn2 tmp2yn2 tmp2zn2
+clear tmp2xn2 tmp2yn2 tmp2zn2 saveindices nsave ctsave
 mmx=mmx_;
 mmy=mmy_;
 mmz=mmz_;
 clear mmx_ mmy_ mmz_
-t=t(1:savetstep:end);

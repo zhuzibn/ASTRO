@@ -122,16 +122,13 @@ savetstep=100;%this is used to reduce data size
 gpusteps=round(gpusave/tstep);
 runtime=gpurun_number*gpusave;%second run for dw motion
 totstep=round(runtime/tstep);
-t=linspace(tstep,runtime,totstep);%This need to be optimized
+t=(0:savetstep:totstep)*tstep;
 
 if ~mod(gpusteps,savetstep)==0
     error('gpusteps should be multiple integer times of savetstep, otherwise there might be errors')
 end
 
-tmp1=ones(1,gpusteps);
-tmp2=tmp1(1:savetstep:end);
-final_m_savestep=size(tmp2,2);
-clear tmp1 tmp2
+final_m_savestep=numel(t);
 
 if (SOT_DLT || SOT_FLT) && ~(rk4==1)
     error('only rk4 is implemented for spin torque driven')
