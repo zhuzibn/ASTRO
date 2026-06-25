@@ -65,6 +65,12 @@ Compare a future benchmark result:
 matlab -batch "addpath('benchmark'); passed=compare_to_baseline('path/to/future_result.mat'); assert(passed)"
 ```
 
+Deterministic invariant smoke checks:
+
+```bash
+matlab -batch "run('tests/run_smoke_tests.m')"
+```
+
 No build command, unit-test framework, lint command, or CI workflow is
 currently defined.
 

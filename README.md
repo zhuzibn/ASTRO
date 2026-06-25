@@ -5,3 +5,15 @@ If you used this environment for your experiments or found it helpful, consider 
 2D FiM: [Phys. Rev. B 106, 184419 (2022)]
 3D FiM: [Appl. Phys. Lett. 124, 012405 (2024)]
 AFM: [Phys. Rev. B 109, 134433 (2024)]
+
+## Verification
+
+Run the deterministic invariant smoke checks from the repository root:
+
+```bash
+matlab -batch "run('tests/run_smoke_tests.m')"
+```
+
+The smoke command runs the quick benchmark into a temporary candidate
+directory and exits nonzero if the fixed atom distribution, trajectory shape,
+finite spin values, spin normalization, or saved-time contract regresses.

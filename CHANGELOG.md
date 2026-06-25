@@ -2,6 +2,14 @@
 
 ## Source Code Changes
 
+### 2026-06-25 - Add deterministic invariant smoke checks
+
+- Added `tests/run_smoke_tests.m`, a MATLAB batch smoke entry point that runs
+  the quick benchmark into a temporary candidate directory and exits nonzero
+  if deterministic atom counts, trajectory dimensions, finite spin values,
+  spin normalization, or saved-time invariants fail.
+- Documented the smoke command in `README.md` and `AGENTS.md`.
+
 ### 2026-06-23 - Align saved spin states with saved times
 
 - Updated the RK4 trajectory assembly in `integrate_llg.m` so the saved
