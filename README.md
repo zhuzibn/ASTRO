@@ -17,3 +17,5 @@ matlab -batch "run('tests/run_smoke_tests.m')"
 The smoke command runs the quick benchmark into a temporary candidate
 directory and exits nonzero if the fixed atom distribution, trajectory shape,
 finite spin values, spin normalization, or saved-time contract regresses.
+It also checks that unsupported solver selections `rk4=0` and `rk4=2` fail
+with the documented `ASTRO:UnsupportedSolver` error before integration.

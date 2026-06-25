@@ -8,6 +8,9 @@ tests_dir = fileparts(smoke_script);
 repo_root = fileparts(tests_dir);
 addpath(repo_root);
 
+assert_unsupported_solver_error(repo_root, 0);
+assert_unsupported_solver_error(repo_root, 2);
+
 benchmark_mode = 'quick';
 benchmark_output_root = tempname;
 run(fullfile(repo_root, 'benchmark', 'run_baseline_benchmark.m'));
@@ -77,6 +80,27 @@ fprintf('ASTRO smoke checks passed.\n');
 fprintf('Result checked: %s\n', result_file);
 fprintf('Saved states: %d\n', expected_saved_count);
 fprintf('Max spin-norm error: %.6e\n', max(abs(spin_norm(:) - 1)));
+
+function assert_unsupported_solver_error(repo_root, unsupported_rk4)
+expected_message = sprintf(['Unsupported ASTRO solver mode rk4=%g. ' ...
+    'Only rk4=1 (RK4) is supported. rk4=0 (Heun) and rk4=2 ' ...
+    '(predictor-corrector) are disabled because they are not validated ' ...
+    'production paths.'], unsupported_rk4);
+try
+    rk4 = unsupported_rk4;
+    run(fullfile(repo_root, 'integrate_llg.m'));
+catch solver_error
+    assert_smoke(strcmp(solver_error.identifier, ...
+        'ASTRO:UnsupportedSolver'), ...
+        sprintf('Unsupported solver rk4=%g failed with the wrong identifier.', ...
+        unsupported_rk4));
+    assert_smoke(strcmp(solver_error.message, expected_message), ...
+        sprintf('Unsupported solver rk4=%g failed with the wrong message.', ...
+        unsupported_rk4));
+    return
+end
+error('Unsupported solver rk4=%g did not fail.', unsupported_rk4);
+end
 
 function assert_smoke(condition, message)
 if ~condition

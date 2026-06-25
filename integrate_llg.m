@@ -1,3 +1,10 @@
+if rk4~=1
+    error('ASTRO:UnsupportedSolver', ...
+        ['Unsupported ASTRO solver mode rk4=%g. Only rk4=1 (RK4) is ' ...
+        'supported. rk4=0 (Heun) and rk4=2 (predictor-corrector) are ' ...
+        'disabled because they are not validated production paths.'], rk4);
+end
+
 mmx_=zeros(natomW,natomL,final_m_savestep);
 mmy_=zeros(natomW,natomL,final_m_savestep);
 mmz_=zeros(natomW,natomL,final_m_savestep);

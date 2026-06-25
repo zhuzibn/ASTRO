@@ -124,6 +124,8 @@ The benchmark figures are self-contained and do not use
 - Width must be reversed when displaying matrix data in the physical
   orientation.
 - The current solver path requires a compatible NVIDIA GPU and MATLAB GPU
-  support. The benchmark does not change physics to provide a CPU fallback.
+  support. `rk4=1` is the only supported solver mode; `rk4=0` and `rk4=2`
+  are explicitly rejected before integration. The benchmark does not change
+  physics to provide a CPU fallback.
 - Separate Gd and TM averages are included only as diagnostic quantities, not
   validated physics observables.

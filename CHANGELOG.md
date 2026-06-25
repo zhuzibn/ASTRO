@@ -2,6 +2,15 @@
 
 ## Source Code Changes
 
+### 2026-06-25 - Reject unsupported solver modes
+
+- Added an `ASTRO:UnsupportedSolver` guard in `main.m` and
+  `integrate_llg.m` so only `rk4=1` reaches integration.
+- Added smoke-test checks that `rk4=0` and `rk4=2` fail with the documented
+  unsupported-solver message.
+- Documented the RK4-only solver policy in `README.md`, `AGENTS.md`, and
+  `benchmark/README.md`.
+
 ### 2026-06-25 - Add deterministic invariant smoke checks
 
 - Added `tests/run_smoke_tests.m`, a MATLAB batch smoke entry point that runs
@@ -28,4 +37,15 @@
 
 ## Error Logs
 
-- None.
+### 2026-06-25 - Unsupported solver modes reached broken integration branches
+
+- Symptom: selecting `rk4=0` or `rk4=2` could enter unvalidated Heun or
+  predictor-corrector integration branches and fail later with misleading
+  undefined-variable or obsolete-signature errors.
+- Root cause: the production path only validated non-RK4 mode for
+  spin-torque-driven runs, while unsupported solver branches remained
+  reachable.
+- Fix: added a shared `ASTRO:UnsupportedSolver` rejection before integration
+  setup and covered `rk4=0` and `rk4=2` with deterministic smoke checks.
+- Prevention: keep unsupported solver selections covered by negative tests
+  until those solvers receive explicit validation and regression coverage.

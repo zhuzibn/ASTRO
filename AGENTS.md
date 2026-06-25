@@ -34,6 +34,9 @@ explicit approval.
 - Run commands from the repository root.
 - MATLAB with Parallel Computing Toolbox GPU support is required.
 - A compatible NVIDIA GPU is required for the current solver path.
+- `rk4=1` is the only supported production solver mode. `rk4=0` and
+  `rk4=2` must fail with `ASTRO:UnsupportedSolver`; do not repair or use the
+  Heun or predictor-corrector paths without explicit validation scope.
 - Do not assume GNU Octave compatibility.
 - Do not add dependencies or use the network without approval.
 
@@ -137,6 +140,8 @@ unless the user approves the operation.
 - Do not silently change physics formulas, signs, axis orientation, boundary
   semantics, solver selection, time indexing, random distributions, or
   normalization.
+- Preserve explicit rejection of unsupported solver modes unless a task
+  explicitly validates and restores those solver paths.
 
 ## Documentation
 

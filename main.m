@@ -130,8 +130,11 @@ end
 
 final_m_savestep=numel(t);
 
-if (SOT_DLT || SOT_FLT) && ~(rk4==1)
-    error('only rk4 is implemented for spin torque driven')
+if rk4~=1
+    error('ASTRO:UnsupportedSolver', ...
+        ['Unsupported ASTRO solver mode rk4=%g. Only rk4=1 (RK4) is ' ...
+        'supported. rk4=0 (Heun) and rk4=2 (predictor-corrector) are ' ...
+        'disabled because they are not validated production paths.'], rk4);
 end
 
 if(0)%view initial state
@@ -166,7 +169,6 @@ end
 integrate_llg(); toc
 %% save data
 save('final.mat')
-
 
 
 
