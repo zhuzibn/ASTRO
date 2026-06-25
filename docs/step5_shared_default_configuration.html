@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Step 5 - Shared Default Configuration</title>
+  <style>
+    :root {
+      --bg: #f7f8fb;
+      --panel: #ffffff;
+      --text: #1f2937;
+      --muted: #64748b;
+      --border: #d9e0ea;
+      --accent: #126b5f;
+      --accent-soft: #e6f4f1;
+      --warn: #8a5a00;
+      --warn-soft: #fff7df;
+      --code: #f6f8fa;
+      --add: #e6ffed;
+      --del: #ffeef0;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.5;
+    }
+
+    main {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 32px 24px 48px;
+    }
+
+    header {
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+      padding-bottom: 20px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 32px;
+      line-height: 1.15;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      margin: 28px 0 12px;
+      font-size: 20px;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      margin: 0 0 8px;
+      font-size: 16px;
+      letter-spacing: 0;
+    }
+
+    p {
+      margin: 0 0 12px;
+    }
+
+    ul {
+      margin: 8px 0 0;
+      padding-left: 20px;
+    }
+
+    li {
+      margin: 6px 0;
+    }
+
+    code {
+      background: var(--code);
+      border-radius: 4px;
+      padding: 1px 5px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.92em;
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin: 16px 0;
+      padding: 18px;
+    }
+
+    .note {
+      background: var(--warn-soft);
+      border-color: #f1d38a;
+      color: var(--warn);
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .summary-item {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+    }
+
+    .summary-item strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .tag {
+      display: inline-block;
+      background: var(--accent-soft);
+      color: var(--accent);
+      border: 1px solid #b7d8d2;
+      border-radius: 999px;
+      padding: 3px 9px;
+      font-size: 12px;
+      font-weight: 700;
+      margin-right: 6px;
+    }
+
+    pre, code {
+      margin: 0;
+      line-height: 1.25;
+    }
+
+    .diff-block {
+      margin: 8px 0 16px;
+      padding: 12px;
+      white-space: pre;
+      overflow-x: auto;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 13px;
+      background: var(--code);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+
+    .diff-block code {
+      background: transparent;
+      border-radius: 0;
+      padding: 0;
+      font-size: 0;
+      line-height: 0;
+      white-space: normal;
+    }
+
+    .diff-line {
+      display: block;
+      margin: 0;
+      padding: 2px 8px;
+      font-size: 13px;
+      line-height: 1.25;
+      white-space: pre;
+    }
+
+    .diff-line.add {
+      background: var(--add);
+    }
+
+    .diff-line.del {
+      background: var(--del);
+    }
+
+    .diff-line.context {
+      background: var(--code);
+    }
+
+    @media (max-width: 720px) {
+      main {
+        padding: 24px 16px 36px;
+      }
+
+      .summary-grid {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        font-size: 26px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Step 5 - Shared Default Configuration</h1>
+      <p class="meta">ASTRO implementation-plan explanation generated from <code>fix.md</code> and the current repository state.</p>
+      <p><span class="tag">Status: planned</span><span class="tag">Risk: medium-high</span><span class="tag">Scope: configuration sharing</span></p>
+    </header>
+
+    <section class="panel note">
+      <h2>Current Status</h2>
+      <p>The working tree currently contains Step 4 changes for rejecting unsupported solver modes. Step 5 has not been implemented yet in the current diff. This report explains the intended Step 5 design and verification path rather than documenting completed source edits.</p>
+    </section>
+
+    <section>
+      <h2>Summary</h2>
+      <div class="summary-grid">
+        <div class="summary-item">
+          <strong>Problem</strong>
+          <p><code>main.m</code> and <code>benchmark/run_baseline_benchmark.m</code> both define the production physics and time-control defaults. The benchmark comments mark those values as copied from <code>main.m</code>, which creates drift risk.</p>
+        </div>
+        <div class="summary-item">
+          <strong>Goal</strong>
+          <p>Create one explicit default-configuration source, then make production and benchmark paths consume the same values while keeping benchmark-only overrides documented and narrow.</p>
+        </div>
+        <div class="summary-item">
+          <strong>Expected Benefit</strong>
+          <p>Default physics, solver selection, enabled terms, and time-grid settings change in one place. The regression benchmark remains aligned with production defaults unless it deliberately overrides lattice size or deterministic input data.</p>
+        </div>
+        <div class="summary-item">
+          <strong>Main Risk</strong>
+          <p>ASTRO scripts depend on workspace variables. A missing variable, renamed field, or changed assignment order can silently alter numerical behavior or fail only after GPU integration begins.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Design Intent</h2>
+      <p>Step 5 should add a small, explicit configuration function such as <code>astro_default_config.m</code>. Its job is to centralize default scalar values, vectors, flags, physical parameters, and time settings currently duplicated between production and benchmark execution.</p>
+      <p>The function should not become a general framework. It should preserve current values exactly and expose only the data needed by existing scripts. Because the current solver path is workspace-oriented, the safest implementation is likely a simple struct plus explicit assignment at each call site.</p>
+      <pre class="diff-block"><code><span class="diff-line del">- %% Control parameters copied from main.m</span><span class="diff-line del">- rk4 = 1;</span><span class="diff-line del">- bc = 1;</span><span class="diff-line del">- DMIenable = 1;</span><span class="diff-line del">- gpusave = 1e-12;</span><span class="diff-line del">- tstep = 2e-16;</span><span class="diff-line add">+ cfg = astro_default_config();</span><span class="diff-line add">+ % Explicitly assign cfg fields needed by legacy workspace scripts.</span><span class="diff-line add">+ rk4 = cfg.rk4;</span><span class="diff-line add">+ bc = cfg.bc;</span><span class="diff-line add">+ DMIenable = cfg.DMIenable;</span><span class="diff-line add">+ gpusave = cfg.gpusave;</span><span class="diff-line add">+ tstep = cfg.tstep;</span></code></pre>
+    </section>
+
+    <section>
+      <h2>Per-file Change Plan</h2>
+      <div class="panel">
+        <h3><code>astro_default_config.m</code></h3>
+        <p>Add a new default source that returns the production configuration. Include solver flags, boundary settings, enabled field terms, material constants derived from <code>constantfile.m</code>, torque settings, thermal settings, lattice defaults, and time-control defaults. Keep units visible in comments where values represent physical quantities.</p>
+      </div>
+      <div class="panel">
+        <h3><code>main.m</code></h3>
+        <p>Replace local default blocks with consumption of <code>astro_default_config()</code>. Keep production behavior unchanged: random atom distribution when no fixed distribution is requested, <code>natomW=20</code>, <code>natomL=30</code>, <code>compositionn=0.1</code>, <code>d=0.4e-9</code>, <code>rk4=1</code>, and the same time grid.</p>
+      </div>
+      <div class="panel">
+        <h3><code>benchmark/run_baseline_benchmark.m</code></h3>
+        <p>Consume the same defaults, then apply benchmark-specific overrides only for documented regression needs: quick/current lattice size, fixed atom distribution file, deterministic seed/input handling, and candidate output paths. The parameter snapshot should still record the effective values used by the run.</p>
+      </div>
+      <div class="panel">
+        <h3><code>tests/run_smoke_tests.m</code></h3>
+        <p>Add or preserve smoke checks that prove the benchmark output still matches the intended configuration: trajectory shape, saved-time contract, finite values, spin normalization, atom distribution metadata, and unsupported solver rejection.</p>
+      </div>
+      <div class="panel">
+        <h3><code>README.md</code>, <code>AGENTS.md</code>, <code>CHANGELOG.md</code></h3>
+        <p>Document the shared configuration source and update the changelog only when the source implementation is actually made. Do not update benchmark baseline artifacts unless explicitly approved.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2>Behavioral Contract</h2>
+      <ul>
+        <li><code>main.m</code> and the benchmark must use identical production defaults before benchmark overrides are applied.</li>
+        <li>Step 5 must not change physics formulas, signs, random-distribution semantics, solver choice, time indexing, spin normalization, or accepted baseline artifacts.</li>
+        <li><code>rk4=1</code> remains the only supported production solver unless a later task explicitly validates another solver path.</li>
+        <li>The benchmark may override lattice size and atom distribution for reproducibility; those overrides must remain obvious in code and documentation.</li>
+        <li>Any comparison should use the accepted post-time-contract candidate, not an older incompatible trajectory.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Verification Plan</h2>
+      <p>Run these commands after implementation from the repository root:</p>
+      <pre class="diff-block"><code><span class="diff-line context">matlab -batch "run('tests/run_smoke_tests.m')"</span><span class="diff-line context">matlab -batch "benchmark_output_root=fullfile(tempdir,'astro-step5-quick'); run('benchmark/run_baseline_benchmark.m')"</span><span class="diff-line context">matlab -batch "addpath('benchmark'); passed=compare_to_baseline(fullfile(tempdir,'astro-step5-quick','output','benchmark_result.mat')); assert(passed)"</span><span class="diff-line context">git diff --stat</span><span class="diff-line context">git diff --check</span></code></pre>
+      <p>The implementation is ready to commit only if smoke tests pass, the temporary benchmark compares successfully, and the diff shows no unrelated formatting churn or baseline artifact changes.</p>
+    </section>
+
+    <section>
+      <h2>Suggested Branch and Commit</h2>
+      <p>Step 5 should start from the accepted Step 4 result on a new branch:</p>
+      <pre class="diff-block"><code><span class="diff-line context">git status --short --branch</span><span class="diff-line context">git switch -c codex-d1a5-share-default-configuration</span><span class="diff-line context">codex --sandbox workspace-write --ask-for-approval on-request</span></code></pre>
+      <p>Commit only after verification shows no unintended behavior change:</p>
+      <pre class="diff-block"><code><span class="diff-line context">git add astro_default_config.m main.m benchmark/run_baseline_benchmark.m tests README.md AGENTS.md CHANGELOG.md</span><span class="diff-line context">git commit -m "Share ASTRO default simulation configuration"</span></code></pre>
+    </section>
+  </main>
+</body>
+</html>
