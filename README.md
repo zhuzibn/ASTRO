@@ -8,6 +8,11 @@ AFM: [Phys. Rev. B 109, 134433 (2024)]
 
 ## Verification
 
+Production simulation defaults are defined in `astro_default_config.m` and
+consumed by both `main.m` and the benchmark runner. Benchmark runs override
+only the fixed atom distribution and output path; quick mode also overrides
+the lattice size.
+
 Run the deterministic invariant smoke checks from the repository root:
 
 ```bash

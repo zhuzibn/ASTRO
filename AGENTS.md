@@ -22,6 +22,7 @@ Read `audit.md` for the current architecture, risks, and audit evidence.
 - `atomgpurk4.m`: LLG derivative used by the active RK4 path.
 - `atomgpu.m`: Heun kernel.
 - `atomgpupc4.m`: predictor-corrector kernel.
+- `astro_default_config.m`: shared production simulation defaults.
 - `benchmark/run_baseline_benchmark.m`: deterministic regression runner.
 - `benchmark/compare_to_baseline.m`: benchmark result comparison.
 
@@ -196,7 +197,7 @@ unless the user approves the operation.
   validation before changes.
 - Thermal noise is generated during every RK4 field evaluation when enabled.
 - Dipole mode 2 is marked potentially wrong in source comments.
-- The benchmark duplicates parameters from `main.m`; review both when default
-  physics parameters change.
+- Production default changes belong in `astro_default_config.m`; review both
+  `main.m` and the benchmark consumer when changing how defaults are applied.
 - Post-processing uses hard-coded paths and a missing external `arrow3`
   dependency.

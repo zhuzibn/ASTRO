@@ -374,6 +374,7 @@ Scope:
 - Run smoke tests and a non-destructive trajectory comparison.
 - Run git diff --stat and git diff --check.
 - Do not commit or push. Report exact commands and results.
+- suggest do I need to merge the changes to the master branch? do I need to push to github?
 ```
 
 ## Step 6 - Pure Deterministic Initialization

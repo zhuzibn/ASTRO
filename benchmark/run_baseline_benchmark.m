@@ -33,6 +33,7 @@ else
     output_file = fullfile(output_dir, 'baseline_result.mat');
 end
 addpath(repo_root);
+astro_defaults = astro_default_config();
 
 if ~exist(input_dir, 'dir'), mkdir(input_dir); end
 if ~exist(output_dir, 'dir'), mkdir(output_dir); end
@@ -76,14 +77,16 @@ end
 % implementation details. baseline_atomtype.mat is the primary 20x30 input.
 current_input_file = fullfile(input_dir, 'baseline_atomtype.mat');
 quick_input_file = fullfile(input_dir, 'baseline_atomtype_quick.mat');
-benchmark_ensure_atomtype(current_input_file, 20, 30, 0.1, 104729, ...
+benchmark_ensure_atomtype(current_input_file, astro_defaults.natomW, ...
+    astro_defaults.natomL, astro_defaults.compositionn, 104729, ...
     'Fixed 20x30 ASTRO baseline distribution; 1=RE/Gd, 0=TM/FeCo.');
-benchmark_ensure_atomtype(quick_input_file, 3, 5, 0.1, 104730, ...
+benchmark_ensure_atomtype(quick_input_file, 3, 5, ...
+    astro_defaults.compositionn, 104730, ...
     'Fixed 3x5 ASTRO quick baseline distribution; 1=RE/Gd, 0=TM/FeCo.');
 
 if strcmp(benchmark_mode, 'current')
-    natomW = 20;
-    natomL = 30;
+    natomW = astro_defaults.natomW;
+    natomL = astro_defaults.natomL;
     atomtype_file = current_input_file;
 else
     natomW = 3;
@@ -105,22 +108,42 @@ try
             'solver path requires gpuArray support.']);
     end
 
-    %% Control parameters copied from main.m
+    %% Shared production defaults from astro_default_config.m
     constantfile;
     clear gam
-    rk4 = 1;
-    bc = 1;
-    DMIenable = 1;
-    dwcalc = 1;
-    thermalenable = 0;
-    loadstartm = 0;
-    load_fixed_atom_distrib = 0;
-    save_fixed_atom_distrib = 0;
-    dipolemode = 0;
-    enablefixedge = 0;
-    compositionn = 0.1;
-    d = 0.4e-9;
+    astro_default_fields = fieldnames(astro_defaults);
+    astro_conditional_fields = {'natom_mc_W', 'natom_mc_L', ...
+        'fixededgeL', 'mxleft', 'myleft', 'mzleft', 'mxright', ...
+        'myright', 'mzright'};
+    for astro_default_index = 1:numel(astro_default_fields)
+        astro_default_name = astro_default_fields{astro_default_index};
+        if ~ismember(astro_default_name, astro_conditional_fields)
+            eval([astro_default_name ' = astro_defaults.(astro_default_name);']);
+        end
+    end
+    clear astro_default_fields astro_default_index astro_default_name ...
+        astro_conditional_fields
+    if strcmp(benchmark_mode, 'current')
+        natomW = astro_defaults.natomW;
+        natomL = astro_defaults.natomL;
+    else
+        natomW = 3;
+        natomL = 5;
+    end
     natom = natomW*natomL;
+    if dipolemode == 3
+        natom_mc_W = astro_defaults.natom_mc_W;
+        natom_mc_L = astro_defaults.natom_mc_L;
+    end
+    if enablefixedge
+        fixededgeL = astro_defaults.fixededgeL;
+        mxleft = astro_defaults.mxleft;
+        myleft = astro_defaults.myleft;
+        mzleft = astro_defaults.mzleft;
+        mxright = astro_defaults.mxright;
+        myright = astro_defaults.myright;
+        mzright = astro_defaults.mzright;
+    end
 
     % Run the existing generation script, then replace its random atom
     % distribution and rebuild the same initial-state formula deterministically.
@@ -136,57 +159,6 @@ try
     [mx_init, my_init, mz_init] = benchmark_initial_state( ...
         atomtype_, natomW, natomL, dwcalc);
 
-    %% FiM, field, and torque parameters copied from main.m
-    Ksim = 0.4e-3*ele;
-    Jgdgd = -1.26e-21;
-    Jfefe = -2.835e-21;
-    Jfegd = 1.09e-21;
-    gTM = 2.2;
-    gRE = 2;
-    gamTM = gTM*mub/(hbar*ele);
-    gamRE = gRE*mub/(hbar*ele);
-    tz = d;
-    musRE = 7.63*mub;
-    musTM = 2.217*mub;
-    msRE = musRE/d^3;
-    msTM = musTM/d^3;
-    if DMIenable
-        Dsim = 128e-6*ele;
-    else
-        Dsim = 0;
-    end
-    alp = 0.02;
-
-    jcSOT = 1e9;
-    jcSTT = 1.5e9;
-    Hext = [0, 0, 0e-3];
-    SOT_DLT = 1;
-    SOT_FLT = 0;
-    psjSHE = [0, 1, 0];
-    psjSHEx = psjSHE(1);
-    psjSHEy = psjSHE(2);
-    psjSHEz = psjSHE(3);
-    thetaSH = 0.2;
-    chi = 0;
-    BDSOTRE = SOT_DLT*hbar/2*thetaSH*jcSOT/(msRE*tz);
-    BDSOTTM = SOT_DLT*hbar/2*thetaSH*jcSOT/(msTM*tz);
-
-    STT_DLT = 0;
-    STT_FLT = 0;
-    psjSTT = [0, 0, 1];
-    psjSTTx = psjSTT(1);
-    psjSTTy = psjSTT(2);
-    psjSTTz = psjSTT(3);
-    etaSTT = 0.8;
-    chiSTT = 0;
-    BDSTTRE = STT_DLT*hbar/2*etaSTT*jcSTT/(msRE*tz);
-    BDSTTTM = STT_DLT*hbar/2*etaSTT*jcSTT/(msTM*tz);
-    T = 100;
-
-    gpusave = 1e-12;
-    gpurun_number = 2;
-    tstep = 2e-16;
-    savetstep = 100;
     gpusteps = round(gpusave/tstep);
     runtime = gpurun_number*gpusave;
     totstep = round(runtime/tstep);
@@ -456,7 +428,7 @@ fprintf(fid, '- Missing quantities: energy is not computed by current ASTRO outp
 fprintf(fid, '\n## Deviations From `main.m`\n\n');
 fprintf(fid, ['- The runner does not execute `main.m` because it starts with ' ...
     '`clear all` and `rng(''shuffle'')`.\n']);
-fprintf(fid, ['- It copies the audited parameter block, runs the existing ' ...
+fprintf(fid, ['- It loads `astro_default_config.m`, runs the existing ' ...
     '`systemgeneration.m`, then replaces the random `atomtype_` with the ' ...
     'fixed input and rebuilds the same initial-state formula.\n']);
 fprintf(fid, ['- It calls the unchanged `integrate_llg.m`, `field_calc.m`, and ' ...

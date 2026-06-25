@@ -3,9 +3,9 @@
 ## Purpose
 
 This benchmark freezes the current ASTRO simulation behavior before
-refactoring. It follows the audited `main.m` parameter and solver path while
-replacing the non-reproducible `rng('shuffle')` atom distribution with a saved
-fixed matrix.
+refactoring. It uses the shared production defaults from
+`astro_default_config.m` while replacing the non-reproducible
+`rng('shuffle')` atom distribution with a saved fixed matrix.
 
 This is a regression reference, not a proof or full validation of the
 underlying physics.
@@ -26,8 +26,8 @@ Current-size `20 x 30` baseline:
 matlab -batch "benchmark_mode='current'; run('benchmark/run_baseline_benchmark.m')"
 ```
 
-Both modes retain the audited physics and time settings. Quick mode changes
-only `natomW` and `natomL`.
+Both modes retain the production physics and time settings. Quick mode
+changes only `natomW` and `natomL`.
 
 To run without overwriting the accepted baseline outputs, set
 `benchmark_output_root` to a candidate directory:

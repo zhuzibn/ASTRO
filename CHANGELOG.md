@@ -2,6 +2,16 @@
 
 ## Source Code Changes
 
+### 2026-06-25 - Share production default configuration
+
+- Added `astro_default_config.m` as the single source for ASTRO production
+  physics, lattice, solver, torque, and time defaults.
+- Updated `main.m` and `benchmark/run_baseline_benchmark.m` to consume the
+  shared defaults, with benchmark overrides limited to lattice size, fixed
+  atom distribution, and candidate output paths.
+- Extended smoke checks to assert benchmark results still match the shared
+  default configuration.
+
 ### 2026-06-25 - Reject unsupported solver modes
 
 - Added an `ASTRO:UnsupportedSolver` guard in `main.m` and
