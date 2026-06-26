@@ -14,6 +14,9 @@ Read `audit.md` for the current architecture, risks, and audit evidence.
 - `constantfile.m`: physical constants.
 - `systemgeneration.m`: atom distribution and initial spin state.
 - `distrib.m`: random or fixed RE/TM site distribution.
+- `astro_validate_atom_distribution.m`: pure validation for deterministic
+  RE/TM site matrices.
+- `astro_initial_spin_state.m`: pure deterministic initial spin construction.
 - `integrate_llg.m`: GPU allocation, exchange setup, time integration, and
   saved trajectory assembly.
 - `field_calc.m`: exchange, anisotropy, DMI, thermal, dipole, and external

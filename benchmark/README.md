@@ -103,6 +103,12 @@ The MAT-files store the generated matrix, dimensions, composition, seed, and
 description. Future runs load the saved matrix; the seed is provenance rather
 than the reproducibility mechanism.
 
+Fixed benchmark distributions are validated with
+`astro_validate_atom_distribution.m`, then initialized with
+`astro_initial_spin_state.m`. The benchmark runner still chooses which fixed
+input file to load; the helper only validates the matrix and constructs the
+deterministic starting spin arrays.
+
 ## Plot Orientation
 
 Spin matrices are indexed `(W, L, time)`. Figures map physical length `L` to

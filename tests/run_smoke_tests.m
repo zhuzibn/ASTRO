@@ -10,6 +10,7 @@ addpath(repo_root);
 
 assert_unsupported_solver_error(repo_root, 0);
 assert_unsupported_solver_error(repo_root, 2);
+assert_deterministic_initialization();
 
 benchmark_mode = 'quick';
 benchmark_output_root = tempname;
@@ -123,6 +124,109 @@ catch solver_error
     return
 end
 error('Unsupported solver rk4=%g did not fail.', unsupported_rk4);
+end
+
+function assert_deterministic_initialization()
+atomtype_ = [0 1 0 1 0; 1 0 1 0 1; 0 0 1 1 0];
+natomW = 3;
+natomL = 5;
+compositionn = nnz(atomtype_ == 1)/(natomW*natomL);
+
+validated_atomtype = astro_validate_atom_distribution(atomtype_, natomW, ...
+    natomL, compositionn);
+assert_smoke(isequal(validated_atomtype, atomtype_), ...
+    'Deterministic atom distribution validation changed atomtype_.');
+
+[mx_dw, my_dw, mz_dw] = astro_initial_spin_state(atomtype_, natomW, ...
+    natomL, true);
+[expected_mx_dw, expected_my_dw, expected_mz_dw] = ...
+    legacy_initial_spin_state(atomtype_, natomW, natomL, true);
+assert_smoke(isequal(mx_dw, expected_mx_dw) && ...
+    isequal(my_dw, expected_my_dw) && isequal(mz_dw, expected_mz_dw), ...
+    'Deterministic domain-wall initialization changed exact output.');
+
+[mx_uniform, my_uniform, mz_uniform] = astro_initial_spin_state( ...
+    atomtype_, natomW, natomL, false);
+[expected_mx_uniform, expected_my_uniform, expected_mz_uniform] = ...
+    legacy_initial_spin_state(atomtype_, natomW, natomL, false);
+assert_smoke(isequal(mx_uniform, expected_mx_uniform) && ...
+    isequal(my_uniform, expected_my_uniform) && ...
+    isequal(mz_uniform, expected_mz_uniform), ...
+    'Deterministic uniform initialization changed exact output.');
+
+assert_invalid_atom_distribution(atomtype_(1:2, :), natomW, natomL, ...
+    compositionn, 'size');
+invalid_values = atomtype_;
+invalid_values(1, 1) = 2;
+assert_invalid_atom_distribution(invalid_values, natomW, natomL, ...
+    compositionn, 'values');
+invalid_composition = atomtype_;
+invalid_composition(1, 1) = 1;
+assert_invalid_atom_distribution(invalid_composition, natomW, natomL, ...
+    compositionn, 'composition');
+end
+
+function [mx_init, my_init, mz_init] = legacy_initial_spin_state( ...
+        atomtype_, natomW, natomL, dwcalc)
+mx_init = zeros(natomW, natomL);
+my_init = zeros(natomW, natomL);
+mz_init = zeros(natomW, natomL);
+
+if dwcalc
+    phi_ = 0;
+    for ctL = 1:natomL
+        for ctW = 1:natomW
+            if ctL < round(natomL/2)
+                if atomtype_(ctW, ctL) == 0
+                    thet_ = 5/180*pi;
+                else
+                    thet_ = (5 + 180)/180*pi;
+                end
+                mx_init(ctW, ctL) = sin(thet_)*cos(phi_);
+                my_init(ctW, ctL) = sin(thet_)*sin(phi_);
+                mz_init(ctW, ctL) = cos(thet_);
+            else
+                if atomtype_(ctW, ctL) == 0
+                    thet_ = (5 + 180)/180*pi;
+                else
+                    thet_ = 5/180*pi;
+                end
+                mx_init(ctW, ctL) = sin(thet_)*cos(phi_);
+                my_init(ctW, ctL) = sin(thet_)*sin(phi_);
+                mz_init(ctW, ctL) = cos(thet_);
+            end
+        end
+    end
+else
+    phi_ = 0;
+    for ctL = 1:natomL
+        for ctW = 1:natomW
+            if atomtype_(ctW, ctL) == 0
+                thet_ = 5/180*pi;
+            else
+                thet_ = (5 + 180)/180*pi;
+            end
+            mx_init(ctW, ctL) = sin(thet_)*cos(phi_);
+            my_init(ctW, ctL) = sin(thet_)*sin(phi_);
+            mz_init(ctW, ctL) = cos(thet_);
+        end
+    end
+end
+end
+
+function assert_invalid_atom_distribution(atomtype_, natomW, natomL, ...
+        compositionn, case_name)
+try
+    astro_validate_atom_distribution(atomtype_, natomW, natomL, ...
+        compositionn);
+catch validation_error
+    assert_smoke(strcmp(validation_error.identifier, ...
+        'ASTRO:InvalidAtomDistribution'), ...
+        sprintf('Invalid atom distribution %s failed with wrong identifier.', ...
+        case_name));
+    return
+end
+error('Invalid atom distribution %s did not fail.', case_name);
 end
 
 function assert_smoke(condition, message)

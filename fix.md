@@ -429,7 +429,7 @@ Phase 3 implementation step 6: extract pure deterministic ASTRO
 initialization.
 
 Read AGENTS.md, audit.md, fix.md, systemgeneration.m, distrib.m, the benchmark
-runner, and current tests.
+runner, and current tests, and step6_pure_deterministic_initialization.html.
 
 Scope:
 - Extract only fixed atom-distribution validation and initial spin

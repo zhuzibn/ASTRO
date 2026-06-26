@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ASTRO Step 6 - Pure Deterministic Initialization</title>
+<style>
+  :root {
+    --bg: #f7f8fb;
+    --panel: #ffffff;
+    --ink: #1f2937;
+    --muted: #64748b;
+    --line: #d9e0ea;
+    --code-bg: #f6f8fa;
+    --green: #e6ffed;
+    --red: #ffeef0;
+    --green-text: #1f7a39;
+    --red-text: #a33a35;
+    --accent: #126b5f;
+    --accent-soft: #e6f4f1;
+    --warn: #8a5a00;
+    --warn-soft: #fff7df;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.55;
+  }
+
+  main {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 32px 24px 48px;
+  }
+
+  header {
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+  }
+
+  h1 {
+    margin: 0 0 8px;
+    font-size: 32px;
+    line-height: 1.15;
+    letter-spacing: 0;
+  }
+
+  h2 {
+    margin: 28px 0 12px;
+    font-size: 20px;
+    letter-spacing: 0;
+  }
+
+  h3 {
+    margin: 0 0 8px;
+    font-size: 16px;
+    letter-spacing: 0;
+  }
+
+  p { margin: 0 0 12px; }
+
+  ul {
+    margin: 8px 0 0;
+    padding-left: 20px;
+  }
+
+  li { margin: 6px 0; }
+
+  code {
+    background: var(--code-bg);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-family: var(--mono);
+    font-size: 0.92em;
+  }
+
+  .meta {
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .tag {
+    display: inline-block;
+    background: var(--accent-soft);
+    color: var(--accent);
+    border: 1px solid #b7d8d2;
+    border-radius: 999px;
+    padding: 3px 9px;
+    font-size: 12px;
+    font-weight: 700;
+    margin: 4px 6px 0 0;
+  }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    margin: 16px 0;
+    padding: 18px;
+  }
+
+  .note {
+    background: var(--warn-soft);
+    border-color: #f1d38a;
+    color: var(--warn);
+  }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .summary-item {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 14px;
+  }
+
+  .summary-item strong {
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  pre, code {
+    margin: 0;
+    line-height: 1.25;
+  }
+
+  .diff-block {
+    margin: 8px 0 16px;
+    padding: 12px;
+    white-space: pre;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 13px;
+    background: var(--code-bg);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+  }
+
+  .diff-block code {
+    background: transparent;
+    border-radius: 0;
+    padding: 0;
+    font-size: 0;
+    line-height: 0;
+    white-space: normal;
+  }
+
+  .diff-line {
+    display: block;
+    margin: 0;
+    padding: 2px 8px;
+    font-size: 13px;
+    line-height: 1.25;
+    white-space: pre;
+  }
+
+  .diff-line.add {
+    background: var(--green);
+    color: var(--green-text);
+  }
+
+  .diff-line.del {
+    background: var(--red);
+    color: var(--red-text);
+  }
+
+  .diff-line.context { background: var(--code-bg); }
+
+  @media (max-width: 720px) {
+    main { padding: 24px 16px 36px; }
+    .summary-grid { grid-template-columns: 1fr; }
+    h1 { font-size: 26px; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Step 6 - Pure Deterministic Initialization</h1>
+    <p class="meta">ASTRO Phase 3 explanatory report generated from <code>fix.md</code>, lines 380-445.</p>
+    <p>
+      <span class="tag">scope: explanation only</span>
+      <span class="tag">status: implemented</span>
+      <span class="tag">risk: medium</span>
+      <span class="tag">source code: changed</span>
+    </p>
+  </header>
+
+  <section class="panel note">
+    <h2>Current Status</h2>
+    <p>
+      Step 6 has been implemented by adding pure helper functions for atom-distribution validation
+      and deterministic initial-spin construction. This report explains the resulting boundary and
+      the verification path.
+    </p>
+  </section>
+
+  <section>
+    <h2>Summary</h2>
+    <div class="summary-grid">
+      <div class="summary-item">
+        <strong>Problem</strong>
+        <p>
+          Initialization is still coupled to workspace-style scripts and caller state. That makes it hard to test fixed atom distributions and initial spin construction directly.
+        </p>
+      </div>
+      <div class="summary-item">
+        <strong>Goal</strong>
+        <p>
+          Extract validation of a fixed atom distribution and construction of the initial spin arrays into explicit functions with clear inputs and outputs.
+        </p>
+      </div>
+      <div class="summary-item">
+        <strong>Boundary</strong>
+        <p>
+          The caller still decides whether the atom distribution is random, loaded, saved, or fixed. Step 6 only makes the deterministic fixed-input path pure and testable.
+        </p>
+      </div>
+      <div class="summary-item">
+        <strong>Success Criterion</strong>
+        <p>
+          For the same deterministic fixed atom matrix, the extracted code must produce exactly the same initialization result as the previous implementation.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>What Changes Conceptually</h2>
+    <p>
+      Step 6 separates two responsibilities that are currently easy to blur:
+    </p>
+    <ul>
+      <li><strong>Policy:</strong> choosing where the atom distribution comes from, such as random generation, a saved file, or a benchmark fixture.</li>
+      <li><strong>Pure deterministic work:</strong> validating a known distribution and turning it into initial <code>sx</code>, <code>sy</code>, and <code>sz</code> spin arrays.</li>
+    </ul>
+    <p>
+      The intended result is a small function boundary where tests can pass a fixed <code>atomtype_</code> matrix and compare outputs without running the full simulation setup.
+    </p>
+  </section>
+
+  <section>
+    <h2>Per-file Changes</h2>
+    <div class="panel">
+      <h3>New initialization function files</h3>
+      <p>
+        <code>astro_validate_atom_distribution.m</code> validates matrix shape, 0/1 atom-type values, and optional composition. <code>astro_initial_spin_state.m</code> constructs <code>mx_init</code>, <code>my_init</code>, and <code>mz_init</code> from explicit inputs.
+      </p>
+    </div>
+    <div class="panel">
+      <h3><code>systemgeneration.m</code></h3>
+      <p>
+        Keeps orchestration and distribution policy, then calls the pure deterministic initializer. Restart loading remains in the script.
+      </p>
+    </div>
+    <div class="panel">
+      <h3><code>benchmark/run_baseline_benchmark.m</code></h3>
+      <p>
+        Uses the shared validator and initializer for fixed benchmark inputs instead of its former private duplicate formula.
+      </p>
+    </div>
+    <div class="panel">
+      <h3><code>tests</code></h3>
+      <p>
+        Adds exact-output checks comparing the extracted initializer against an independent copy of the previous deterministic fixed-input logic.
+      </p>
+    </div>
+    <div class="panel">
+      <h3><code>README.md</code> and <code>CHANGELOG.md</code></h3>
+      <p>
+        Expected to document any new test command or helper behavior, and record the source-code change per repository instructions.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Behavioral Contract</h2>
+    <ul>
+      <li><code>atomtype_ == 1</code> must continue to mean RE/Gd.</li>
+      <li><code>atomtype_ == 0</code> must continue to mean TM/FeCo.</li>
+      <li><code>W</code>/<code>L</code> indexing and array shapes must not change.</li>
+      <li>Domain-wall orientation, signs, and angles must match the current deterministic output.</li>
+      <li>Integration, field calculation, solver kernels, and physics defaults are out of scope.</li>
+      <li>Random distribution, loading, and saving policy remain in existing callers.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Plan Diff</h2>
+    <p>
+      This is the implemented scope from <code>fix.md</code>, shown as a compact report block.
+    </p>
+    <pre class="diff-block"><code><span class="diff-line context">## Step 6 - Pure Deterministic Initialization</span><span class="diff-line add">Goal: Extract atom-distribution validation and initial-spin construction into explicit functions with inputs and outputs.</span><span class="diff-line add">Keep random/fixed distribution policy in the caller.</span><span class="diff-line context">Likely files: new initialization function files, systemgeneration.m, benchmark runner, smoke tests, README.md, CHANGELOG.md.</span><span class="diff-line context">Risk: Medium. RE/TM sign conventions and domain-wall orientation must not change.</span><span class="diff-line add">Tests must compare extracted initialization output exactly against the previous deterministic fixed-input result.</span><span class="diff-line del">Do not modify integration, fields, solver kernels, or physics defaults.</span></code></pre>
+  </section>
+
+  <section>
+    <h2>Verification</h2>
+    <p>
+      The implementation should be accepted only after the deterministic initialization check and a quick benchmark path both pass.
+    </p>
+    <pre class="diff-block"><code><span class="diff-line context">matlab -batch "run('tests/run_smoke_tests.m')"</span><span class="diff-line context">matlab -batch "benchmark_output_root=fullfile(tempdir,'astro-step6-quick'); run('benchmark/run_baseline_benchmark.m')"</span><span class="diff-line context">git diff --stat</span><span class="diff-line context">git diff --check</span></code></pre>
+    <p>
+      The smoke tests should include an exact deterministic comparison for the extracted helper. The benchmark verifies the refactor did not disturb trajectory-level behavior.
+    </p>
+  </section>
+
+  <section>
+    <h2>Branch and Commit Guidance</h2>
+    <p>
+      Step 6 should start from the accepted Step 5 result on a dedicated branch:
+    </p>
+    <pre class="diff-block"><code><span class="diff-line context">git status --short --branch</span><span class="diff-line context">git switch -c codex-d1a6-extract-spin-initialization</span><span class="diff-line context">codex --sandbox workspace-write --ask-for-approval on-request</span></code></pre>
+    <p>
+      Commit only after exact initialization checks and trajectory checks pass:
+    </p>
+    <pre class="diff-block"><code><span class="diff-line context">git add systemgeneration.m benchmark/run_baseline_benchmark.m tests README.md CHANGELOG.md</span><span class="diff-line context">git add &lt;new-initialization-function-files&gt;</span><span class="diff-line context">git commit -m "Extract deterministic spin initialization"</span></code></pre>
+  </section>
+
+  <section>
+    <h2>Why This Step Matters</h2>
+    <p>
+      This step reduces risk before adding lower-level field and boundary tests in Step 7. Once initialization is pure, deterministic, and exactly tested, later failures are easier to localize to field formulas, boundary handling, or integration rather than setup code.
+    </p>
+  </section>
+</main>
+</body>
+</html>

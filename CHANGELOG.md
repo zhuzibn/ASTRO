@@ -2,6 +2,19 @@
 
 ## Source Code Changes
 
+### 2026-06-25 - Extract deterministic spin initialization
+
+- Added `astro_validate_atom_distribution.m` to validate deterministic RE/TM
+  atom matrices for shape, allowed values, and optional composition.
+- Added `astro_initial_spin_state.m` to construct deterministic initial spin
+  arrays from explicit inputs while preserving the existing RE/Gd, TM/FeCo,
+  and domain-wall sign conventions.
+- Updated `systemgeneration.m` and `benchmark/run_baseline_benchmark.m` to use
+  the shared initializer while keeping random, fixed-input, and restart policy
+  in their existing callers.
+- Extended smoke checks with exact-output tests against the previous
+  deterministic initialization formula.
+
 ### 2026-06-25 - Share production default configuration
 
 - Added `astro_default_config.m` as the single source for ASTRO production
