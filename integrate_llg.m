@@ -13,10 +13,6 @@ BDSOT=zeros(natomW,natomL,'gpuArray');
 BDSTT=zeros(natomW,natomL,'gpuArray');
 muigpu=zeros(natomW,natomL,'gpuArray');
 scalgpu=zeros(natomW,natomL,'gpuArray');
-AsimnextL=zeros(natomW,natomL,'gpuArray');
-AsimnextW=zeros(natomW,natomL,'gpuArray');
-AsimpreviousL=zeros(natomW,natomL,'gpuArray');
-AsimpreviousW=zeros(natomW,natomL,'gpuArray');
 for ctL=1:natomL
     for ctW=1:natomW
         if atomtype_(ctW,ctL)==1%RE
@@ -30,130 +26,14 @@ for ctL=1:natomL
             BDSOT(ctW,ctL)=BDSOTTM;
             BDSTT(ctW,ctL)=BDSTTTM;
         end
-        if atomtype_(ctW,ctL)==1%local atom is RE
-            if ctL==natomL
-                if bc
-                    AsimnextL(ctW,ctL)=0;
-                else
-                    AsimnextL(ctW,ctL)=Jgdgd*(atomtype_(ctW,ctL)==atomtype_(ctW,1))+...
-                        Jfegd*(~atomtype_(ctW,ctL)==atomtype_(ctW,1));
-                end
-            else
-                if atomtype_(ctW,ctL+1)==1%the other atom is RE
-                    AsimnextL(ctW,ctL)=Jgdgd;
-                else%the other atom is TM
-                    AsimnextL(ctW,ctL)=Jfegd;
-                end
-            end
-            
-            if ctL==1
-                if bc
-                    AsimpreviousL(ctW,ctL)=0;
-                else
-                    AsimpreviousL(ctW,ctL)=Jgdgd*(atomtype_(ctW,ctL)==atomtype_(ctW,natomL))+...
-                        Jfegd*(~atomtype_(ctW,ctL)==atomtype_(ctW,natomL));
-                end
-            else
-                if atomtype_(ctW,ctL-1)==1%the other atom is RE
-                    AsimpreviousL(ctW,ctL)=Jgdgd;
-                else%the other atom is TM
-                    AsimpreviousL(ctW,ctL)=Jfegd;
-                end
-            end
-            
-            if ctW==natomW
-                if bc
-                    AsimpreviousW(ctW,ctL)=0;
-                else
-                    AsimpreviousW(ctW,ctL)=Jgdgd*(atomtype_(ctW,ctL)==atomtype_(1,ctL))+...
-                        Jfegd*(~atomtype_(ctW,ctL)==atomtype_(1,ctL));
-                end
-            else
-                if atomtype_(ctW+1,ctL)==1%the other atom is RE
-                    AsimpreviousW(ctW,ctL)=Jgdgd;
-                else%the other atom is TM
-                    AsimpreviousW(ctW,ctL)=Jfegd;
-                end
-            end
-            
-            if ctW==1
-                if bc
-                    AsimnextW(ctW,ctL)=0;
-                else
-                    AsimnextW(ctW,ctL)=Jgdgd*(atomtype_(ctW,ctL)==atomtype_(natomW,ctL))+...
-                        Jfegd*(~atomtype_(ctW,ctL)==atomtype_(natomW,ctL));
-                end
-            else
-                if atomtype_(ctW-1,ctL)==1%the other atom is RE
-                    AsimnextW(ctW,ctL)=Jgdgd;
-                else%the other atom is TM
-                    AsimnextW(ctW,ctL)=Jfegd;
-                end
-            end
-            
-        else%local atom is TM
-            if ctL==natomL
-                if bc
-                    AsimnextL(ctW,ctL)=0;
-                else
-                    AsimnextL(ctW,ctL)=Jfefe*(atomtype_(ctW,ctL)==atomtype_(ctW,1))+...
-                        Jfegd*(~atomtype_(ctW,ctL)==atomtype_(ctW,1));
-                end
-            else
-                if atomtype_(ctW,ctL+1)==1%the other atom is RE
-                    AsimnextL(ctW,ctL)=Jfegd;
-                else%the other atom is TM
-                    AsimnextL(ctW,ctL)=Jfefe;
-                end
-            end
-            
-            if ctL==1
-                if bc
-                    AsimpreviousL(ctW,ctL)=0;
-                else
-                    AsimpreviousL(ctW,ctL)=Jfefe*(atomtype_(ctW,ctL)==atomtype_(ctW,natomL))+...
-                        Jfegd*(~atomtype_(ctW,ctL)==atomtype_(ctW,natomL));
-                end
-            else
-                if atomtype_(ctW,ctL-1)==1%the other atom is RE
-                    AsimpreviousL(ctW,ctL)=Jfegd;
-                else%the other atom is TM
-                    AsimpreviousL(ctW,ctL)=Jfefe;
-                end
-            end
-
-            if ctW==natomW
-                if bc
-                    AsimpreviousW(ctW,ctL)=0;
-                else
-                    AsimpreviousW(ctW,ctL)=Jfefe*(atomtype_(ctW,ctL)==atomtype_(1,ctL))+...
-                        Jfegd*(~atomtype_(ctW,ctL)==atomtype_(1,ctL));
-                end
-            else
-                if atomtype_(ctW+1,ctL)==1%the other atom is RE
-                    AsimpreviousW(ctW,ctL)=Jfegd;
-                else%the other atom is TM
-                    AsimpreviousW(ctW,ctL)=Jfefe;
-                end
-            end
-            
-            if ctW==1
-                if bc
-                    AsimnextW(ctW,ctL)=0;
-                else
-                    AsimnextW(ctW,ctL)=Jfefe*(atomtype_(ctW,ctL)==atomtype_(natomW,ctL))+...
-                        Jfegd*(~atomtype_(ctW,ctL)==atomtype_(natomW,ctL));
-                end
-            else
-                if atomtype_(ctW-1,ctL)==1%the other atom is RE
-                    AsimnextW(ctW,ctL)=Jfegd;
-                else%the other atom is TM
-                    AsimnextW(ctW,ctL)=Jfefe;
-                end
-            end
-        end
     end
 end
+[AsimnextL, AsimpreviousL, AsimnextW, AsimpreviousW] = ...
+    astro_exchange_neighbor_coefficients(atomtype_, bc, Jgdgd, Jfefe, Jfegd);
+AsimnextL = gpuArray(AsimnextL);
+AsimpreviousL = gpuArray(AsimpreviousL);
+AsimnextW = gpuArray(AsimnextW);
+AsimpreviousW = gpuArray(AsimpreviousW);
 gamatom=scalgpu*(1+alp^2);
 clear ctW ctL
 BFSOT=chi*BDSOT;

@@ -32,3 +32,14 @@ It also checks that unsupported solver selections `rk4=0` and `rk4=2` fail
 with the documented `ASTRO:UnsupportedSolver` error before integration, and
 that deterministic initialization matches the previous fixed-input formula
 exactly.
+
+Run deterministic boundary and field-term checks from the repository root:
+
+```bash
+matlab -batch "run('tests/run_field_tests.m')"
+```
+
+The field command checks `bc=1` non-periodic and `bc=0` periodic neighbor
+behavior on small fixed atom matrices. It also verifies exchange,
+anisotropy, DMI, and external-field terms separately against hand-derived
+expected values while leaving thermal and dipole terms out of scope.

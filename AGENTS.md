@@ -78,6 +78,12 @@ Deterministic invariant smoke checks:
 matlab -batch "run('tests/run_smoke_tests.m')"
 ```
 
+Deterministic boundary and field-term checks:
+
+```bash
+matlab -batch "run('tests/run_field_tests.m')"
+```
+
 No build command, unit-test framework, lint command, or CI workflow is
 currently defined.
 

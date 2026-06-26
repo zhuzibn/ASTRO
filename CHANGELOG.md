@@ -2,6 +2,17 @@
 
 ## Source Code Changes
 
+### 2026-06-26 - Add deterministic boundary and field-term checks
+
+- Added `tests/run_field_tests.m` to cover non-periodic and periodic boundary
+  neighbor behavior on small fixed atom matrices.
+- Extracted `astro_exchange_neighbor_coefficients.m` from the integration
+  setup so exchange-link coefficients can be tested without entering the GPU
+  RK4 path.
+- Added `astro_evaluate_field_terms.m` and updated `field_calc.m` to use it
+  for deterministic exchange, anisotropy, DMI, and external field terms while
+  leaving thermal and dipole additions in the existing production script.
+
 ### 2026-06-25 - Extract deterministic spin initialization
 
 - Added `astro_validate_atom_distribution.m` to validate deterministic RE/TM
