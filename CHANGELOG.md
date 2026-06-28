@@ -2,6 +2,17 @@
 
 ## Source Code Changes
 
+### 2026-06-28 - Define production result schema
+
+- Added `astro_build_production_result.m` to build a versioned production
+  `astro_result` schema with configuration, atom distribution, initial state,
+  trajectory, timestamps, and provenance.
+- Updated `main.m` to accept caller-selected `astro_output_file` paths and to
+  save only the explicit production schema instead of the complete MATLAB
+  workspace.
+- Extended smoke checks with production schema assertions and documented the
+  non-destructive production output command in `README.md` and `AGENTS.md`.
+
 ### 2026-06-26 - Add deterministic boundary and field-term checks
 
 - Added `tests/run_field_tests.m` to cover non-periodic and periodic boundary

@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Step 8 - Explicit Production Result Schema</title>
+  <style>
+    :root {
+      --text: #1f2933;
+      --muted: #52606d;
+      --border: #d9e2ec;
+      --panel: #f8fafc;
+      --add: #e6ffed;
+      --del: #ffeef0;
+      --ctx: #f6f8fa;
+      --accent: #0b7285;
+    }
+    body {
+      margin: 0;
+      color: var(--text);
+      background: white;
+      font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 32px 24px 48px;
+    }
+    h1, h2, h3 {
+      margin: 0;
+      line-height: 1.2;
+    }
+    h1 {
+      font-size: 30px;
+      letter-spacing: 0;
+    }
+    h2 {
+      margin-top: 28px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      font-size: 20px;
+    }
+    h3 {
+      margin-top: 20px;
+      font-size: 16px;
+    }
+    p {
+      margin: 10px 0;
+    }
+    ul {
+      margin: 8px 0 0 20px;
+      padding: 0;
+    }
+    li {
+      margin: 4px 0;
+    }
+    code, pre {
+      margin: 0;
+      line-height: 1.25;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    .meta {
+      margin-top: 10px;
+      color: var(--muted);
+    }
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 16px;
+    }
+    .pill {
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 4px 10px;
+      background: var(--panel);
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+    .summary-card {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      background: var(--panel);
+    }
+    .summary-card strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+    .diff-block {
+      margin: 8px 0 16px;
+      padding: 12px;
+      overflow-x: auto;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0;
+      line-height: 0;
+      white-space: normal;
+    }
+    .diff-line {
+      display: block;
+      margin: 0;
+      padding: 2px 8px;
+      font-size: 13px;
+      line-height: 1.25;
+      white-space: pre;
+    }
+    .diff-line.add { background: var(--add); }
+    .diff-line.del { background: var(--del); }
+    .diff-line.context { background: var(--ctx); }
+    .file-note {
+      color: var(--muted);
+      margin-top: 4px;
+    }
+    .callout {
+      border-left: 4px solid var(--accent);
+      background: #edfafa;
+      padding: 10px 12px;
+      margin: 12px 0;
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Step 8 - Explicit Production Result Schema</h1>
+  <p class="meta">Branch: <code>codex-d1a8-define-result-schema</code>. Report generated for the current uncommitted working tree.</p>
+  <div class="pill-row">
+    <span class="pill">MATLAB production output</span>
+    <span class="pill">Schema version 1.0</span>
+    <span class="pill">Non-destructive output path</span>
+    <span class="pill">Smoke-tested</span>
+  </div>
+
+  <h2>Summary</h2>
+  <p>This improvement replaces production complete-workspace saves with an explicit, versioned <code>astro_result</code> schema. The simulation physics and trajectory arrays remain produced by the existing initialization and RK4 integration path; the change is limited to how production results are packaged and where they are saved.</p>
+  <div class="summary-grid">
+    <div class="summary-card">
+      <strong>Before</strong>
+      <span><code>main.m</code> always wrote root <code>final.mat</code> with the entire MATLAB workspace, including transient variables.</span>
+    </div>
+    <div class="summary-card">
+      <strong>After</strong>
+      <span><code>main.m</code> writes one top-level <code>astro_result</code> struct containing documented sections for configuration, atom distribution, initial state, trajectory, timestamps, and provenance.</span>
+    </div>
+    <div class="summary-card">
+      <strong>Output path</strong>
+      <span>Callers can set <code>astro_output_file</code> before running <code>main.m</code>; default behavior still targets <code>final.mat</code>.</span>
+    </div>
+    <div class="summary-card">
+      <strong>Regression control</strong>
+      <span>Smoke tests now assert the schema shape and ensure workspace-style top-level variables are not leaked.</span>
+    </div>
+  </div>
+
+  <h2>Behavioral Contract</h2>
+  <ul>
+    <li>Production MAT-files contain exactly one intended top-level variable: <code>astro_result</code>.</li>
+    <li><code>astro_result.schema_version</code> is <code>1.0</code>.</li>
+    <li>Required sections are <code>configuration</code>, <code>atom_distribution</code>, <code>initial_state</code>, <code>trajectory</code>, <code>timestamps</code>, and <code>provenance</code>.</li>
+    <li><code>trajectory.mx</code>, <code>trajectory.my</code>, <code>trajectory.mz</code>, and <code>trajectory.t</code> preserve the existing saved simulation values.</li>
+    <li><code>astro_output_file</code> allows verification runs without overwriting root <code>final.mat</code>.</li>
+  </ul>
+
+  <h2>Per-file Changes</h2>
+
+  <h3>main.m</h3>
+  <p class="file-note">Adds caller-selectable output path handling, preserves that variable through workspace clearing, captures elapsed runtime, builds the schema, and saves only <code>astro_result</code>.</p>
+  <pre class="diff-block"><code><span class="diff-line del">-clear all;clc;close all;tic</span><span class="diff-line add">+clearvars -except astro_output_file;clc;close all;astro_main_timer=tic;</span><span class="diff-line add">+if ~exist('astro_output_file','var') || isempty(astro_output_file)</span><span class="diff-line add">+    astro_output_file='final.mat';</span><span class="diff-line add">+end</span><span class="diff-line add">+astro_output_file=char(astro_output_file);</span><span class="diff-line context"> constantfile;</span><span class="diff-line context"> clear gam</span><span class="diff-line context"> astro_defaults=astro_default_config();</span><span class="diff-line add">+astro_config=astro_defaults;</span></code></pre>
+  <pre class="diff-block"><code><span class="diff-line del">-integrate_llg(); toc</span><span class="diff-line add">+integrate_llg();</span><span class="diff-line add">+astro_elapsed_seconds=toc(astro_main_timer);</span><span class="diff-line context"> %% save data</span><span class="diff-line del">-save('final.mat')</span><span class="diff-line add">+astro_config.natom=natom;</span><span class="diff-line add">+astro_config.gpusteps=gpusteps;</span><span class="diff-line add">+astro_config.runtime=runtime;</span><span class="diff-line add">+astro_config.totstep=totstep;</span><span class="diff-line add">+astro_config.final_m_savestep=final_m_savestep;</span><span class="diff-line add">+astro_result=astro_build_production_result(astro_config, atomtype_, ...</span><span class="diff-line add">+    mx_init, my_init, mz_init, mmx, mmy, mmz, t, ...</span><span class="diff-line add">+    astro_elapsed_seconds, astro_output_file);</span><span class="diff-line add">+astro_output_dir=fileparts(astro_output_file);</span><span class="diff-line add">+if ~isempty(astro_output_dir) &amp;&amp; ~exist(astro_output_dir,'dir')</span><span class="diff-line add">+    mkdir(astro_output_dir);</span><span class="diff-line add">+end</span><span class="diff-line add">+save(astro_output_file,'astro_result')</span><span class="diff-line add">+fprintf('ASTRO production result saved to %s\n', astro_output_file);</span></code></pre>
+
+  <h3>astro_build_production_result.m</h3>
+  <p class="file-note">New helper that centralizes the production schema layout and provenance collection.</p>
+  <pre class="diff-block"><code><span class="diff-line add">+function astro_result = astro_build_production_result(config, atomtype_, ...</span><span class="diff-line add">+        mx_init, my_init, mz_init, mmx, mmy, mmz, t, elapsed_seconds, ...</span><span class="diff-line add">+        output_file)</span><span class="diff-line add">+%ASTRO_BUILD_PRODUCTION_RESULT Build the versioned production MAT schema.</span><span class="diff-line add">+</span><span class="diff-line add">+schema_version = '1.0';</span><span class="diff-line add">+configuration = config;</span><span class="diff-line add">+configuration.schema_version = schema_version;</span><span class="diff-line add">+configuration.output_file = char(output_file);</span><span class="diff-line add">+</span><span class="diff-line add">+atom_distribution = struct( ...</span><span class="diff-line add">+    'atomtype_', atomtype_, ...</span><span class="diff-line add">+    'meaning', '1=RE/Gd, 0=TM/FeCo', ...</span><span class="diff-line add">+    'natomW', configuration.natomW, ...</span><span class="diff-line add">+    'natomL', configuration.natomL, ...</span><span class="diff-line add">+    'compositionn', configuration.compositionn, ...</span><span class="diff-line add">+    'gd_site_count', nnz(atomtype_ == 1), ...</span><span class="diff-line add">+    'tm_site_count', nnz(atomtype_ == 0));</span></code></pre>
+  <pre class="diff-block"><code><span class="diff-line add">+trajectory = struct( ...</span><span class="diff-line add">+    'mx', mmx, ...</span><span class="diff-line add">+    'my', mmy, ...</span><span class="diff-line add">+    'mz', mmz, ...</span><span class="diff-line add">+    't', t, ...</span><span class="diff-line add">+    'time_unit', 's', ...</span><span class="diff-line add">+    'array_order', '(W,L,time)');</span><span class="diff-line add">+</span><span class="diff-line add">+provenance = struct( ...</span><span class="diff-line add">+    'entry_point', 'main.m', ...</span><span class="diff-line add">+    'git_commit', astro_command_output('git rev-parse HEAD'), ...</span><span class="diff-line add">+    'git_branch', astro_command_output('git branch --show-current'), ...</span><span class="diff-line add">+    'matlab_version', version, ...</span><span class="diff-line add">+    'operating_system', system_dependent('getos'), ...</span><span class="diff-line add">+    'gpu_info', astro_gpu_info(), ...</span><span class="diff-line add">+    'elapsed_seconds', elapsed_seconds, ...</span><span class="diff-line add">+    'output_file', char(output_file));</span></code></pre>
+
+  <h3>tests/run_smoke_tests.m</h3>
+  <p class="file-note">Adds a deterministic schema unit check that does not run the full production simulation but verifies the MAT-file contract.</p>
+  <pre class="diff-block"><code><span class="diff-line context"> assert_unsupported_solver_error(repo_root, 0);</span><span class="diff-line context"> assert_unsupported_solver_error(repo_root, 2);</span><span class="diff-line context"> assert_deterministic_initialization();</span><span class="diff-line add">+assert_production_result_schema();</span></code></pre>
+  <pre class="diff-block"><code><span class="diff-line add">+function assert_production_result_schema()</span><span class="diff-line add">+config = astro_default_config();</span><span class="diff-line add">+config.natomW = 2;</span><span class="diff-line add">+config.natomL = 2;</span><span class="diff-line add">+config.final_m_savestep = 2;</span><span class="diff-line add">+atomtype_ = [0 1; 1 0];</span><span class="diff-line add">+astro_result = astro_build_production_result(config, atomtype_, mx_init, ...</span><span class="diff-line add">+    my_init, mz_init, mmx, mmy, mmz, t, 0, output_file);</span><span class="diff-line add">+save(output_file, 'astro_result');</span><span class="diff-line add">+saved_variables = whos('-file', output_file);</span><span class="diff-line add">+assert_smoke(numel(saved_variables) == 1 &amp;&amp; ...</span><span class="diff-line add">+    strcmp(saved_variables.name, 'astro_result'), ...</span><span class="diff-line add">+    'Production result file should contain only astro_result.');</span><span class="diff-line add">+required_sections = {'schema_name', 'schema_version', 'configuration', ...</span><span class="diff-line add">+    'atom_distribution', 'initial_state', 'trajectory', 'timestamps', ...</span><span class="diff-line add">+    'provenance'};</span><span class="diff-line add">+assert_smoke(all(isfield(result, required_sections)), ...</span><span class="diff-line add">+    'Production result schema is missing required top-level sections.');</span><span class="diff-line add">+assert_smoke(~isfield(result, 'Ksim') &amp;&amp; ~isfield(result, 'mmx'), ...</span><span class="diff-line add">+    'Production result leaked workspace-style top-level variables.');</span><span class="diff-line add">+end</span></code></pre>
+
+  <h3>README.md</h3>
+  <p class="file-note">Documents default and non-destructive production run commands plus the top-level schema expectation.</p>
+  <pre class="diff-block"><code><span class="diff-line add">+## Production Output</span><span class="diff-line add">+</span><span class="diff-line add">+Run the production simulation from the repository root:</span><span class="diff-line add">+</span><span class="diff-line add">+```bash</span><span class="diff-line add">+matlab -batch "run('main.m')"</span><span class="diff-line add">+```</span><span class="diff-line add">+</span><span class="diff-line add">+By default this writes `final.mat`. To avoid overwriting that file, set</span><span class="diff-line add">+`astro_output_file` before running `main.m`:</span><span class="diff-line add">+</span><span class="diff-line add">+```bash</span><span class="diff-line add">+matlab -batch "astro_output_file=fullfile(tempdir,'astro-production-result.mat'); run('main.m')"</span><span class="diff-line add">+```</span><span class="diff-line add">+</span><span class="diff-line add">+Production output stores one top-level variable, `astro_result`, using schema</span><span class="diff-line add">+version `1.0`.</span></code></pre>
+
+  <h3>AGENTS.md</h3>
+  <p class="file-note">Updates project instructions so future agents know the production output contract and non-destructive run pattern.</p>
+  <pre class="diff-block"><code><span class="diff-line del">-This uses `rng('shuffle')` and creates or overwrites root `final.mat`.</span><span class="diff-line add">+This uses `rng('shuffle')` and writes an explicit `astro_result` schema to</span><span class="diff-line add">+root `final.mat` by default. To avoid overwriting `final.mat`, set an output</span><span class="diff-line add">+path before running:</span><span class="diff-line add">+</span><span class="diff-line add">+```bash</span><span class="diff-line add">+matlab -batch "astro_output_file=fullfile(tempdir,'astro-production-result.mat'); run('main.m')"</span><span class="diff-line add">+```</span></code></pre>
+  <pre class="diff-block"><code><span class="diff-line add">+- Production output stores one top-level `astro_result` variable with schema</span><span class="diff-line add">+  version `1.0`; do not restore complete-workspace saves without explicit</span><span class="diff-line add">+  compatibility scope.</span></code></pre>
+
+  <h3>CHANGELOG.md</h3>
+  <p class="file-note">Records the feature, affected files, and test/documentation coverage.</p>
+  <pre class="diff-block"><code><span class="diff-line add">+### 2026-06-28 - Define production result schema</span><span class="diff-line add">+</span><span class="diff-line add">+- Added `astro_build_production_result.m` to build a versioned production</span><span class="diff-line add">+  `astro_result` schema with configuration, atom distribution, initial state,</span><span class="diff-line add">+  trajectory, timestamps, and provenance.</span><span class="diff-line add">+- Updated `main.m` to accept caller-selected `astro_output_file` paths and to</span><span class="diff-line add">+  save only the explicit production schema instead of the complete MATLAB</span><span class="diff-line add">+  workspace.</span><span class="diff-line add">+- Extended smoke checks with production schema assertions and documented the</span><span class="diff-line add">+  non-destructive production output command in `README.md` and `AGENTS.md`.</span></code></pre>
+
+  <h2>Verification</h2>
+  <div class="callout">
+    <p><strong>Smoke test:</strong> <code>matlab -batch "run('tests/run_smoke_tests.m')"</code> passed. The quick benchmark completed in <code>235.747482</code> seconds with <code>101</code> saved states and max spin-norm error <code>2.220446e-16</code>.</p>
+    <p><strong>Non-destructive production run:</strong> <code>astro_output_file=string(fullfile(tempdir,'astro-production-step8-final.mat')); run('main.m')</code> passed and validated that the MAT-file contains only <code>astro_result</code> with required sections and matching trajectory/time counts.</p>
+    <p><strong>Diff checks:</strong> <code>git diff --check</code> passed with only pre-existing CRLF normalization warnings from unrelated tracked MATLAB files.</p>
+  </div>
+
+  <h2>Changed Files</h2>
+  <ul>
+    <li><code>astro_build_production_result.m</code> - new schema builder and provenance helper.</li>
+    <li><code>main.m</code> - selectable output path and explicit schema save.</li>
+    <li><code>tests/run_smoke_tests.m</code> - schema contract assertions.</li>
+    <li><code>README.md</code> - user-facing production output documentation.</li>
+    <li><code>AGENTS.md</code> - project workflow and output-contract instructions.</li>
+    <li><code>CHANGELOG.md</code> - source-change entry.</li>
+  </ul>
+</main>
+</body>
+</html>

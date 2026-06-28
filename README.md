@@ -43,3 +43,23 @@ The field command checks `bc=1` non-periodic and `bc=0` periodic neighbor
 behavior on small fixed atom matrices. It also verifies exchange,
 anisotropy, DMI, and external-field terms separately against hand-derived
 expected values while leaving thermal and dipole terms out of scope.
+
+## Production Output
+
+Run the production simulation from the repository root:
+
+```bash
+matlab -batch "run('main.m')"
+```
+
+By default this writes `final.mat`. To avoid overwriting that file, set
+`astro_output_file` before running `main.m`:
+
+```bash
+matlab -batch "astro_output_file=fullfile(tempdir,'astro-production-result.mat'); run('main.m')"
+```
+
+Production output stores one top-level variable, `astro_result`, using schema
+version `1.0`. The struct contains documented sections for configuration,
+atom distribution, initial spin state, saved trajectory, timestamps, and
+provenance. It does not save the complete MATLAB workspace.

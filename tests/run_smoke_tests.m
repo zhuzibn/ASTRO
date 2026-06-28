@@ -11,6 +11,7 @@ addpath(repo_root);
 assert_unsupported_solver_error(repo_root, 0);
 assert_unsupported_solver_error(repo_root, 2);
 assert_deterministic_initialization();
+assert_production_result_schema();
 
 benchmark_mode = 'quick';
 benchmark_output_root = tempname;
@@ -227,6 +228,71 @@ catch validation_error
     return
 end
 error('Invalid atom distribution %s did not fail.', case_name);
+end
+
+function assert_production_result_schema()
+config = astro_default_config();
+config.natomW = 2;
+config.natomL = 2;
+config.natom = 4;
+config.gpusteps = 1;
+config.runtime = config.tstep;
+config.totstep = 1;
+config.final_m_savestep = 2;
+
+atomtype_ = [0 1; 1 0];
+mx_init = ones(2, 2);
+my_init = zeros(2, 2);
+mz_init = zeros(2, 2);
+mmx = zeros(2, 2, 2);
+mmy = zeros(2, 2, 2);
+mmz = zeros(2, 2, 2);
+mmx(:, :, 1) = mx_init;
+mmy(:, :, 1) = my_init;
+mmz(:, :, 1) = mz_init;
+mmx(:, :, 2) = mx_init;
+mmy(:, :, 2) = my_init;
+mmz(:, :, 2) = mz_init;
+t = [0, config.runtime];
+output_file = [tempname, '.mat'];
+
+astro_result = astro_build_production_result(config, atomtype_, mx_init, ...
+    my_init, mz_init, mmx, mmy, mmz, t, 0, output_file);
+save(output_file, 'astro_result');
+
+saved_variables = whos('-file', output_file);
+assert_smoke(numel(saved_variables) == 1 && ...
+    strcmp(saved_variables.name, 'astro_result'), ...
+    'Production result file should contain only astro_result.');
+result = load(output_file);
+result = result.astro_result;
+
+required_sections = {'schema_name', 'schema_version', 'configuration', ...
+    'atom_distribution', 'initial_state', 'trajectory', 'timestamps', ...
+    'provenance'};
+assert_smoke(all(isfield(result, required_sections)), ...
+    'Production result schema is missing required top-level sections.');
+assert_smoke(strcmp(result.schema_version, '1.0'), ...
+    'Production result schema version changed unexpectedly.');
+assert_smoke(isequal(result.atom_distribution.atomtype_, atomtype_), ...
+    'Production result atom distribution changed.');
+assert_smoke(isequal(result.initial_state.mx, mx_init) && ...
+    isequal(result.initial_state.my, my_init) && ...
+    isequal(result.initial_state.mz, mz_init), ...
+    'Production result initial state changed.');
+assert_smoke(isequal(result.trajectory.mx, mmx) && ...
+    isequal(result.trajectory.my, mmy) && ...
+    isequal(result.trajectory.mz, mmz) && ...
+    isequal(result.trajectory.t, t), ...
+    'Production result trajectory changed.');
+assert_smoke(numel(result.timestamps.trajectory_time_s) == ...
+    size(result.trajectory.mx, 3), ...
+    'Production result timestamp count does not match trajectory depth.');
+assert_smoke(result.atom_distribution.gd_site_count == 2 && ...
+    result.atom_distribution.tm_site_count == 2, ...
+    'Production result atom counts are incorrect.');
+assert_smoke(~isfield(result, 'Ksim') && ~isfield(result, 'mmx'), ...
+    'Production result leaked workspace-style top-level variables.');
 end
 
 function assert_smoke(condition, message)

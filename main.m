@@ -1,10 +1,15 @@
 % 2D atomistic model for FiM
 % require nvidia GPU
-clear all;clc;close all;tic
+clearvars -except astro_output_file;clc;close all;astro_main_timer=tic;
+if ~exist('astro_output_file','var') || isempty(astro_output_file)
+    astro_output_file='final.mat';
+end
+astro_output_file=char(astro_output_file);
 %% control parameter
 constantfile;
 clear gam
 astro_defaults=astro_default_config();
+astro_config=astro_defaults;
 astro_default_fields=fieldnames(astro_defaults);
 astro_conditional_fields={'natom_mc_W','natom_mc_L','fixededgeL', ...
     'mxleft','myleft','mzleft','mxright','myright','mzright'};
@@ -99,7 +104,20 @@ if(0)%view initial state
         scale3d,arrowwidth,plotmode,colorbarplot,generatemovie,movieduration,plotmoviestep)
 end
 %% dynamic calc
-integrate_llg(); toc
+integrate_llg();
+astro_elapsed_seconds=toc(astro_main_timer);
 %% save data
-save('final.mat')
-
+astro_config.natom=natom;
+astro_config.gpusteps=gpusteps;
+astro_config.runtime=runtime;
+astro_config.totstep=totstep;
+astro_config.final_m_savestep=final_m_savestep;
+astro_result=astro_build_production_result(astro_config, atomtype_, ...
+    mx_init, my_init, mz_init, mmx, mmy, mmz, t, ...
+    astro_elapsed_seconds, astro_output_file);
+astro_output_dir=fileparts(astro_output_file);
+if ~isempty(astro_output_dir) && ~exist(astro_output_dir,'dir')
+    mkdir(astro_output_dir);
+end
+save(astro_output_file,'astro_result')
+fprintf('ASTRO production result saved to %s\n', astro_output_file);

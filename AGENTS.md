@@ -52,7 +52,13 @@ Main simulation:
 matlab -batch "run('main.m')"
 ```
 
-This uses `rng('shuffle')` and creates or overwrites root `final.mat`.
+This uses `rng('shuffle')` and writes an explicit `astro_result` schema to
+root `final.mat` by default. To avoid overwriting `final.mat`, set an output
+path before running:
+
+```bash
+matlab -batch "astro_output_file=fullfile(tempdir,'astro-production-result.mat'); run('main.m')"
+```
 
 Quick deterministic benchmark:
 
@@ -161,6 +167,9 @@ unless the user approves the operation.
   documentation-only work.
 - Update `audit.md` or project instructions only when repository facts change.
 - Mark uncertain commands or behavior as tentative rather than guessing.
+- Production output stores one top-level `astro_result` variable with schema
+  version `1.0`; do not restore complete-workspace saves without explicit
+  compatibility scope.
 
 ## Repository Modification Workflow
 
